@@ -227,15 +227,9 @@ RG_FORCEINLINE Byte rg_mode9_cpp(const Byte* pSrc, int srcPitch) {
 
     auto mindiff = std::min(std::min(std::min(d1, d2), d3), d4);
 
-    if (mindiff == d4) {
-        return clip(c, mil4, mal4);
-    }
-    if (mindiff == d2) {
-        return clip(c, mil2, mal2);
-    }
-    if (mindiff == d3) {
-        return clip(c, mil3, mal3);
-    }
+    if (mindiff == d4) return clip(c, mil4, mal4);
+    if (mindiff == d2) return clip(c, mil2, mal2);
+    if (mindiff == d3) return clip(c, mil3, mal3);
     return clip(c, mil1, mal1);
 }
 
@@ -260,8 +254,7 @@ RG_FORCEINLINE Byte rg_mode10_cpp(const Byte* pSrc, int srcPitch) {
     if (mindiff == d3) return a3;
     if (mindiff == d1) return a1;
     if (mindiff == d5) return a5;
-    if (mindiff == d4) return a4;
-    return 255;
+    return a4;
 }
 
 
@@ -296,8 +289,7 @@ RG_FORCEINLINE Byte rg_mode13_and14_cpp(const Byte* pSrc, int srcPitch) {
     
     if (mindiff == d2) return (a2+a7+1)/2;
     if (mindiff == d3) return (a3+a6+1)/2;
-    if (mindiff == d1) return (a1+a8+1)/2;
-	return 0;
+    return (a1+a8+1)/2;
 }
 
 static Byte avg(Byte a, Byte b) {
@@ -318,9 +310,7 @@ RG_FORCEINLINE Byte rg_mode15_and16_cpp(const Byte* pSrc, int srcPitch) {
 
     if (mindiff == d2) return clip(average,std::min(a2,a7),std::max(a2,a7));
     if (mindiff == d3) return clip(average,std::min(a3,a6),std::max(a3,a6));
-    if (mindiff == d1) return clip(average,std::min(a1,a8),std::max(a1,a8));
-
-    return 0;
+    return clip(average,std::min(a1,a8),std::max(a1,a8));
 }
 
 
@@ -359,9 +349,7 @@ RG_FORCEINLINE Byte rg_mode18_cpp(const Byte* pSrc, int srcPitch) {
     if (mindiff == d4) return clip(c,std::min(a4,a5),std::max(a4,a5));
     if (mindiff == d2) return clip(c,std::min(a2,a7),std::max(a2,a7));
     if (mindiff == d3) return clip(c,std::min(a3,a6),std::max(a3,a6));
-    if (mindiff == d1) return clip(c,std::min(a1,a8),std::max(a1,a8));
-    
-     return 255;
+    return clip(c,std::min(a1,a8),std::max(a1,a8));
 }
 
 RG_FORCEINLINE Byte rg_mode19_cpp(const Byte* pSrc, int srcPitch) {
