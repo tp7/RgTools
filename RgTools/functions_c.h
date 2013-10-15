@@ -157,18 +157,22 @@ RG_FORCEINLINE Byte rg_mode7_cpp(const Byte* pSrc, int srcPitch) {
     auto d3 = mal3 - mil3;
     auto d4 = mal4 - mil4;
 
-    int c1 = std::abs(c-clip(c, mil1, mal1))+d1;
-    int c2 = std::abs(c-clip(c, mil2, mal2))+d2;
-    int c3 = std::abs(c-clip(c, mil3, mal3))+d3;
-    int c4 = std::abs(c-clip(c, mil4, mal4))+d4;
+    auto clipped1 = clip(c, mil1, mal1);
+    auto clipped2 = clip(c, mil2, mal2);
+    auto clipped3 = clip(c, mil3, mal3);
+    auto clipped4 = clip(c, mil4, mal4);
 
+    int c1 = std::abs(c-clipped1)+d1;
+    int c2 = std::abs(c-clipped2)+d2;
+    int c3 = std::abs(c-clipped3)+d3;
+    int c4 = std::abs(c-clipped4)+d4;
 
     auto mindiff = std::min(std::min(std::min(c1, c2), c3), c4);
 
-    if (mindiff == c4) return clip(c, mil4, mal4);
-    if (mindiff == c2) return clip(c, mil2, mal2);
-    if (mindiff == c3) return clip(c, mil3, mal3);
-    return clip(c, mil1, mal1);
+    if (mindiff == c4) return clipped4;
+    if (mindiff == c2) return clipped2;
+    if (mindiff == c3) return clipped3;
+    return clipped1;
 }
 
 RG_FORCEINLINE Byte rg_mode8_cpp(const Byte* pSrc, int srcPitch) {

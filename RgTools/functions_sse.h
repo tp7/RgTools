@@ -51,7 +51,11 @@ static RG_FORCEINLINE __m128i blend(__m128i const &mask, __m128i const &desired,
     return _mm_or_si128(andop, andnop);
 }
 
-
+static RG_FORCEINLINE __m128i abs_diff(__m128i a, __m128i b) {
+    auto positive = _mm_subs_epu8(a, b);
+    auto negative = _mm_subs_epu8(b, a);
+    return _mm_or_si128(positive, negative);
+}
 
 
 RG_FORCEINLINE __m128i rg_nothing_sse(const Byte*, int) {
@@ -172,6 +176,47 @@ RG_FORCEINLINE __m128i rg_mode4_sse(const Byte* pSrc, int srcPitch) {
 static RG_FORCEINLINE __m128i select_on_equal(__m128i &cmp1, __m128i &cmp2, __m128i &current, __m128i &desired) {
     auto eq = _mm_cmpeq_epi8(cmp1, cmp2);
     return blend(eq, desired, current);
+}
+
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode7_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto mal1 = _mm_max_epu8(a1, a8);
+    auto mil1 = _mm_min_epu8(a1, a8);
+
+    auto mal2 = _mm_max_epu8(a2, a7);
+    auto mil2 = _mm_min_epu8(a2, a7);
+
+    auto mal3 = _mm_max_epu8(a3, a6);
+    auto mil3 = _mm_min_epu8(a3, a6);
+
+    auto mal4 = _mm_max_epu8(a4, a5);
+    auto mil4 = _mm_min_epu8(a4, a5);
+
+    auto d1 = _mm_subs_epu8(mal1, mil1);
+    auto d2 = _mm_subs_epu8(mal2, mil2);
+    auto d3 = _mm_subs_epu8(mal3, mil3);
+    auto d4 = _mm_subs_epu8(mal4, mil4);
+
+    auto clipped1 = clip(c, mil1, mal1);
+    auto clipped2 = clip(c, mil2, mal2);
+    auto clipped3 = clip(c, mil3, mal3);
+    auto clipped4 = clip(c, mil4, mal4);
+
+    auto c1 = _mm_adds_epu8(abs_diff(c, clipped1), d1);
+    auto c2 = _mm_adds_epu8(abs_diff(c, clipped2), d2);
+    auto c3 = _mm_adds_epu8(abs_diff(c, clipped3), d3);
+    auto c4 = _mm_adds_epu8(abs_diff(c, clipped4), d4);
+
+    auto mindiff = _mm_min_epu8(c1, c2);
+    mindiff = _mm_min_epu8(mindiff, c3);
+    mindiff = _mm_min_epu8(mindiff, c4);
+
+    auto result = select_on_equal(mindiff, c1, c, clipped1);
+    result = select_on_equal(mindiff, c3, result, clipped3);
+    result = select_on_equal(mindiff, c2, result, clipped2);
+    return select_on_equal(mindiff, c4, result, clipped4);
 }
 
 
