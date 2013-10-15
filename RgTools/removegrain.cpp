@@ -167,7 +167,7 @@ PlaneProcessor* c_functions[] = {
 
 class RemoveGrain2 : public GenericVideoFilter {
 public:
-    RemoveGrain2(PClip child, int mode, int modeU, int modeV, IScriptEnvironment* env);
+    RemoveGrain2(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env);
 
     PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
 
@@ -182,7 +182,7 @@ private:
 };
 
 
-RemoveGrain2::RemoveGrain2(PClip child, int mode, int modeU, int modeV, IScriptEnvironment* env)
+RemoveGrain2::RemoveGrain2(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
     : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
         if(!vi.IsPlanar()) {
             env->ThrowError("RemoveGrain2 works only with planar colorspaces");
@@ -200,11 +200,17 @@ RemoveGrain2::RemoveGrain2(PClip child, int mode, int modeU, int modeV, IScriptE
             modeV_ = modeU_;
         }
 
-       /* functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
+        functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
             : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
-            : c_functions;*/
+            : c_functions;
 
-        functions = c_functions;
+        if (optimization != nullptr) {
+            if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
+                functions = sse2_functions;
+            } else if (lstrcmpi(optimization, "cpp") == 0) {
+                functions = c_functions;
+            }
+        }
 }
 
 
@@ -227,8 +233,8 @@ PVideoFrame RemoveGrain2::GetFrame(int n, IScriptEnvironment* env) {
 
 
 AVSValue __cdecl Create_RemoveGrain2(AVSValue args, void*, IScriptEnvironment* env) {
-    enum { CLIP, MODE, MODEU, MODEV };
-    return new RemoveGrain2(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain2::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain2::UNDEFINED_MODE), env);
+    enum { CLIP, MODE, MODEU, MODEV, OPTIMIZATION };
+    return new RemoveGrain2(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain2::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain2::UNDEFINED_MODE), args[OPTIMIZATION].AsString(nullptr), env);
 }
 
 const AVS_Linkage *AVS_linkage = nullptr;
@@ -236,6 +242,6 @@ const AVS_Linkage *AVS_linkage = nullptr;
 extern "C" __declspec(dllexport) const char* __stdcall AvisynthPluginInit3(IScriptEnvironment* env, const AVS_Linkage* const vectors) {
     AVS_linkage = vectors;
 
-    env->AddFunction("RemoveGrain2", "c[order]i[mode]i[modeUV]i[asm]b", Create_RemoveGrain2, 0);
+    env->AddFunction("RemoveGrain2", "c[order]i[mode]i[modeUV]i[opt]s", Create_RemoveGrain2, 0);
     return "Itai, onii-chan!";
 }
