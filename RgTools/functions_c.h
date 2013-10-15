@@ -236,14 +236,14 @@ RG_FORCEINLINE Byte rg_mode9_cpp(const Byte* pSrc, int srcPitch) {
 RG_FORCEINLINE Byte rg_mode10_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto d1 = std::abs(c-a1);
-    auto d2 = std::abs(c-a2);
-    auto d3 = std::abs(c-a3);
-    auto d4 = std::abs(c-a4);
-    auto d5 = std::abs(c-a5);
-    auto d6 = std::abs(c-a6);
-    auto d7 = std::abs(c-a7);
-    auto d8 = std::abs(c-a8);
+    auto d1 = std::abs(c - a1);
+    auto d2 = std::abs(c - a2);
+    auto d3 = std::abs(c - a3);
+    auto d4 = std::abs(c - a4);
+    auto d5 = std::abs(c - a5);
+    auto d6 = std::abs(c - a6);
+    auto d7 = std::abs(c - a7);
+    auto d8 = std::abs(c - a8);
 
     auto mindiff = std::min(std::min(std::min(std::min(std::min(std::min(std::min(d1, d2), d3), d4), d5), d6), d7), d8);
     
@@ -281,36 +281,32 @@ RG_FORCEINLINE Byte rg_mode12_cpp(const Byte* pSrc, int srcPitch) {
 RG_FORCEINLINE Byte rg_mode13_and14_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto d1 = std::abs(a1-a8);
-    auto d2 = std::abs(a2-a7);
-    auto d3 = std::abs(a3-a6);
+    auto d1 = std::abs(a1 - a8);
+    auto d2 = std::abs(a2 - a7);
+    auto d3 = std::abs(a3 - a6);
 
     auto mindiff = std::min(std::min(d1, d2), d3);
     
-    if (mindiff == d2) return (a2+a7+1)/2;
-    if (mindiff == d3) return (a3+a6+1)/2;
-    return (a1+a8+1)/2;
-}
-
-static Byte avg(Byte a, Byte b) {
-    return ( a + b + 1 ) >> 1;
+    if (mindiff == d2) return (a2 + a7 + 1) / 2;
+    if (mindiff == d3) return (a3 + a6 + 1) / 2;
+    return (a1 + a8 + 1) / 2;
 }
 
 //rounding does not match
 RG_FORCEINLINE Byte rg_mode15_and16_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto d1 = std::abs(a1-a8);
-    auto d2 = std::abs(a2-a7);
-    auto d3 = std::abs(a3-a6);
+    auto d1 = std::abs(a1 - a8);
+    auto d2 = std::abs(a2 - a7);
+    auto d3 = std::abs(a3 - a6);
 
     auto mindiff = std::min(std::min(d1, d2), d3);
 
-    auto average = (a1+2*a2+a3 + a6+2*a7+a8 + 4)/8;
+    auto average = (a1 + 2*a2 + a3 + a6 + 2*a7 + a8 + 4) / 8;
 
-    if (mindiff == d2) return clip(average,std::min(a2,a7),std::max(a2,a7));
-    if (mindiff == d3) return clip(average,std::min(a3,a6),std::max(a3,a6));
-    return clip(average,std::min(a1,a8),std::max(a1,a8));
+    if (mindiff == d2) return clip(average, std::min(a2, a7), std::max(a2, a7));
+    if (mindiff == d3) return clip(average, std::min(a3, a6), std::max(a3, a6));
+    return clip(average, std::min(a1, a8), std::max(a1, a8));
 }
 
 
@@ -329,27 +325,27 @@ RG_FORCEINLINE Byte rg_mode17_cpp(const Byte* pSrc, int srcPitch) {
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    auto lower = std::max(std::max(std::max(mil1,mil2),mil3),mil4);
-    auto upper = std::min(std::min(std::min(mal1,mal2),mal3),mal4);
+    auto lower = std::max(std::max(std::max(mil1, mil2), mil3), mil4);
+    auto upper = std::min(std::min(std::min(mal1, mal2), mal3), mal4);
 
-    return clip(c,std::min(lower,upper), std::max(lower, upper));
+    return clip(c, std::min(lower, upper), std::max(lower, upper));
 }
 
 
 RG_FORCEINLINE Byte rg_mode18_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto d1 = std::max(std::abs(c-a1),std::abs(c-a8));
-    auto d2 = std::max(std::abs(c-a2),std::abs(c-a7));
-    auto d3 = std::max(std::abs(c-a3),std::abs(c-a6));
-    auto d4 = std::max(std::abs(c-a4),std::abs(c-a5));
+    auto d1 = std::max(std::abs(c - a1), std::abs(c - a8));
+    auto d2 = std::max(std::abs(c - a2), std::abs(c - a7));
+    auto d3 = std::max(std::abs(c - a3), std::abs(c - a6));
+    auto d4 = std::max(std::abs(c - a4), std::abs(c - a5));
 
     auto mindiff = std::min(std::min(std::min(d1, d2), d3), d4);
 
-    if (mindiff == d4) return clip(c,std::min(a4,a5),std::max(a4,a5));
-    if (mindiff == d2) return clip(c,std::min(a2,a7),std::max(a2,a7));
-    if (mindiff == d3) return clip(c,std::min(a3,a6),std::max(a3,a6));
-    return clip(c,std::min(a1,a8),std::max(a1,a8));
+    if (mindiff == d4) return clip(c, std::min(a4, a5),std::max(a4, a5));
+    if (mindiff == d2) return clip(c, std::min(a2, a7),std::max(a2, a7));
+    if (mindiff == d3) return clip(c, std::min(a3, a6),std::max(a3, a6));
+    return clip(c, std::min(a1, a8), std::max(a1, a8));
 }
 
 RG_FORCEINLINE Byte rg_mode19_cpp(const Byte* pSrc, int srcPitch) {
@@ -379,35 +375,35 @@ RG_FORCEINLINE Byte rg_mode20_cpp(const Byte* pSrc, int srcPitch) {
 RG_FORCEINLINE Byte rg_mode21_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto l1a = (a1+a8)/2;
-    auto l2a = (a2+a7)/2;
-    auto l3a = (a3+a6)/2;
-    auto l4a = (a4+a5)/2;
+    auto l1a = (a1 + a8) / 2;
+    auto l2a = (a2 + a7) / 2;
+    auto l3a = (a3 + a6) / 2;
+    auto l4a = (a4 + a5) / 2;
 
-    auto l1b = (a1+a8+1)/2;
-    auto l2b = (a2+a7+1)/2;
-    auto l3b = (a3+a6+1)/2;
-    auto l4b = (a4+a5+1)/2;
+    auto l1b = (a1 + a8 + 1) / 2;
+    auto l2b = (a2 + a7 + 1) / 2;
+    auto l3b = (a3 + a6 + 1) / 2;
+    auto l4b = (a4 + a5 + 1) / 2;
 
     auto ma = std::max(std::max(std::max(l1b, l2b), l3b), l4b);
     auto mi = std::min(std::min(std::min(l1a, l2a), l3a), l4a);
 
-    return clip(c,mi,ma);
+    return clip(c, mi, ma);
 }
 
 
 RG_FORCEINLINE Byte rg_mode22_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    auto l1 = (a1+a8+1)/2;
-    auto l2 = (a2+a7+1)/2;
-    auto l3 = (a3+a6+1)/2;
-    auto l4 = (a4+a5+1)/2;
+    auto l1 = (a1 + a8 + 1) / 2;
+    auto l2 = (a2 + a7 + 1) / 2;
+    auto l3 = (a3 + a6 + 1) / 2;
+    auto l4 = (a4 + a5 + 1) / 2;
 
     auto ma = std::max(std::max(std::max(l1, l2), l3), l4);
     auto mi = std::min(std::min(std::min(l1, l2), l3), l4);
 
-    return clip(c,mi,ma);
+    return clip(c, mi, ma);
 }
 
 RG_FORCEINLINE Byte rg_mode23_cpp(const Byte* pSrc, int srcPitch) {
@@ -425,19 +421,19 @@ RG_FORCEINLINE Byte rg_mode23_cpp(const Byte* pSrc, int srcPitch) {
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    auto u1 = std::min(c-mal1,mal1-mil1); // note that we can use saturating subtraction here because we don't care if u* is negative
-    auto u2 = std::min(c-mal2,mal2-mil2);
-    auto u3 = std::min(c-mal3,mal3-mil3);
-    auto u4 = std::min(c-mal4,mal4-mil4);
-    auto u =  std::max(std::max(std::max(std::max(u1,u2),u3),u4),0);
+    auto u1 = std::min(c - mal1, mal1 - mil1); // note that we can use saturating subtraction here because we don't care if u* is negative
+    auto u2 = std::min(c - mal2, mal2 - mil2);
+    auto u3 = std::min(c - mal3, mal3 - mil3);
+    auto u4 = std::min(c - mal4, mal4 - mil4);
+    auto u =  std::max(std::max(std::max(std::max(u1, u2), u3), u4), 0);
 
-    auto d1 = std::min(mil1-c,mal1-mil1); // likewise, saturating subtraction here too
-    auto d2 = std::min(mil2-c,mal2-mil2);
-    auto d3 = std::min(mil3-c,mal3-mil3);
-    auto d4 = std::min(mil4-c,mal4-mil4);
-    auto d = std::max(std::max(std::max(std::max(d1,d2),d3),d4),0);
+    auto d1 = std::min(mil1 - c, mal1 - mil1); // likewise, saturating subtraction here too
+    auto d2 = std::min(mil2 - c, mal2 - mil2);
+    auto d3 = std::min(mil3 - c, mal3 - mil3);
+    auto d4 = std::min(mil4 - c, mal4 - mil4);
+    auto d = std::max(std::max(std::max(std::max(d1, d2), d3), d4), 0);
 
-    return c-u+d; // this probably will never overflow.
+    return c - u + d; // this probably will never overflow.
 }
 
 
@@ -456,19 +452,19 @@ RG_FORCEINLINE Byte rg_mode24_cpp(const Byte* pSrc, int srcPitch) {
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    auto u1 = std::min(c-mal1,mal1-mil1-(c-mal1)); // as above, satsub
-    auto u2 = std::min(c-mal2,mal2-mil2-(c-mal2));
-    auto u3 = std::min(c-mal3,mal3-mil3-(c-mal3));
-    auto u4 = std::min(c-mal4,mal4-mil4-(c-mal4));
-    auto u = std::max(std::max(std::max(std::max(u1,u2),u3),u4),0);
+    auto u1 = std::min(c - mal1, mal1 - mil1 -(c - mal1)); // as above, satsub
+    auto u2 = std::min(c - mal2, mal2 - mil2 -(c - mal2));
+    auto u3 = std::min(c - mal3, mal3 - mil3 -(c - mal3));
+    auto u4 = std::min(c - mal4, mal4 - mil4 -(c - mal4));
+    auto u = std::max(std::max(std::max(std::max(u1, u2), u3), u4), 0);
 
-    auto d1 = std::min(mil1-c,mal1-mil1-(mil1-c)); // satsub etc.
-    auto d2 = std::min(mil2-c,mal2-mil2-(mil2-c));
-    auto d3 = std::min(mil3-c,mal3-mil3-(mil3-c));
-    auto d4 = std::min(mil4-c,mal4-mil4-(mil4-c));
-    auto d = std::max(std::max(std::max(std::max(d1,d2),d3),d4),0);
+    auto d1 = std::min(mil1 - c, mal1 - mil1 - (mil1 - c)); // satsub etc.
+    auto d2 = std::min(mil2 - c, mal2 - mil2 - (mil2 - c));
+    auto d3 = std::min(mil3 - c, mal3 - mil3 - (mil3 - c));
+    auto d4 = std::min(mil4 - c, mal4 - mil4 - (mil4 - c));
+    auto d = std::max(std::max(std::max(std::max(d1, d2), d3), d4), 0);
 
-    return c-u+d;
+    return c - u + d;
 }
 
 
