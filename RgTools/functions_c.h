@@ -21,7 +21,7 @@ typedef Byte (CModeProcessor)(const Byte*, int);
     Byte a8 = *((ptr) + (pitch) + 1);
 
 
-RG_FORCEINLINE Byte clip(Byte val, Byte minimum, Byte maximum) {
+static RG_FORCEINLINE Byte clip(Byte val, Byte minimum, Byte maximum) {
     return std::max(std::min(val, maximum), minimum);
 }
 

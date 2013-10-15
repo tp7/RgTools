@@ -2,7 +2,7 @@
 #define __FUNCTIONS_SSE_H__
 
 #include "common.h"
-#include <pmmintrin.h>
+#include <smmintrin.h>
 
 typedef __m128i (SseModeProcessor)(const Byte*, int);
 
@@ -19,7 +19,7 @@ typedef __m128i (SseModeProcessor)(const Byte*, int);
 
 
 
-RG_FORCEINLINE void sort_pair(__m128i &a1, __m128i &a2)
+static RG_FORCEINLINE void sort_pair(__m128i &a1, __m128i &a2)
 {
     const __m128i tmp = _mm_min_epu8 (a1, a2);
     a2 = _mm_max_epu8 (a1, a2);
@@ -28,7 +28,7 @@ RG_FORCEINLINE void sort_pair(__m128i &a1, __m128i &a2)
 
 
 template<InstructionSet optLevel>
-RG_FORCEINLINE __m128i simd_loadu_si128(const Byte* ptr) {
+static RG_FORCEINLINE __m128i simd_loadu_si128(const Byte* ptr) {
     if (optLevel == SSE2) {
 #ifdef USE_MOVPS
         return _mm_castps_si128(_mm_loadu_ps(reinterpret_cast<const float*>(ptr)));
@@ -38,6 +38,19 @@ RG_FORCEINLINE __m128i simd_loadu_si128(const Byte* ptr) {
     }
     return _mm_lddqu_si128(reinterpret_cast<const __m128i*>(ptr));
 }
+
+static RG_FORCEINLINE __m128i clip(__m128i &val, __m128i &minimum, __m128i &maximum) {
+    return _mm_max_epu8(_mm_min_epu8(val, maximum), minimum);
+}
+
+//mask ? a : b
+static RG_FORCEINLINE __m128i blend(__m128i const &mask, __m128i const &desired, __m128i const &otherwise) {
+   //return  _mm_blendv_epi8 (otherwise, desired, mask);
+    auto andop = _mm_and_si128(mask , desired);
+    auto andnop = _mm_andnot_si128(mask, otherwise);
+    return _mm_or_si128(andop, andnop);
+}
+
 
 
 
@@ -59,7 +72,7 @@ RG_FORCEINLINE __m128i rg_mode1_sse(const Byte* pSrc, int srcPitch) {
         _mm_max_epu8(_mm_max_epu8(a5, a6), _mm_max_epu8(a7, a8))
         );
 
-    return _mm_min_epu8(_mm_max_epu8(c, mi), ma);
+    return clip(c, mi, ma);
 }
 
 template<InstructionSet optLevel>
@@ -90,7 +103,7 @@ RG_FORCEINLINE __m128i rg_mode2_sse(const Byte* pSrc, int srcPitch) {
     a2 = _mm_min_epu8 (a2, a3);	// sort_pair (a2, a3);
     a7 = _mm_max_epu8 (a6, a7);	// sort_pair (a6, a7);
 
-    return (_mm_min_epu8 (_mm_max_epu8 (c, a2), a7));
+    return clip(c, a2, a7);
 }
 
 template<InstructionSet optLevel>
@@ -121,7 +134,7 @@ RG_FORCEINLINE __m128i rg_mode3_sse(const Byte* pSrc, int srcPitch) {
     a3 = _mm_max_epu8(a2, a3);	// sort_pair (a2, a3);
     a6 = _mm_min_epu8(a6, a7);	// sort_pair (a6, a7);
 
-    return _mm_min_epu8(_mm_max_epu8(c, a3), a6);
+    return clip(c, a3, a6);
 }
 
 template<InstructionSet optLevel>
@@ -153,8 +166,47 @@ RG_FORCEINLINE __m128i rg_mode4_sse(const Byte* pSrc, int srcPitch) {
     sort_pair (a4, a5);
     // sort_pair (a6, a7);
 
-    return _mm_min_epu8 (_mm_max_epu8 (c, a4), a5);
+    return clip(c, a4, a5);
 }
+
+static RG_FORCEINLINE __m128i select_on_equal(__m128i &cmp1, __m128i &cmp2, __m128i &current, __m128i &desired) {
+    auto eq = _mm_cmpeq_epi8(cmp1, cmp2);
+    return blend(eq, desired, current);
+}
+
+
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode9_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto mal1 = _mm_max_epu8(a1, a8);
+    auto mil1 = _mm_min_epu8(a1, a8);
+
+    auto mal2 = _mm_max_epu8(a2, a7);
+    auto mil2 = _mm_min_epu8(a2, a7);
+
+    auto mal3 = _mm_max_epu8(a3, a6);
+    auto mil3 = _mm_min_epu8(a3, a6);
+
+    auto mal4 = _mm_max_epu8(a4, a5);
+    auto mil4 = _mm_min_epu8(a4, a5);
+
+    auto d1 = _mm_subs_epu8(mal1, mil1);
+    auto d2 = _mm_subs_epu8(mal2, mil2);
+    auto d3 = _mm_subs_epu8(mal3, mil3);
+    auto d4 = _mm_subs_epu8(mal4, mil4);
+
+    auto mindiff = _mm_min_epu8(d1, d2);
+    mindiff = _mm_min_epu8(mindiff, d3);
+    mindiff = _mm_min_epu8(mindiff, d4);
+
+    auto result = select_on_equal(mindiff, d1, c, clip(c, mil1, mal1));
+    result = select_on_equal(mindiff, d3, result, clip(c, mil3, mal3));
+    result = select_on_equal(mindiff, d2, result, clip(c, mil2, mal2));
+    return select_on_equal(mindiff, d4, result, clip(c, mil4, mal4));
+}
+
+
 
 
 #endif
