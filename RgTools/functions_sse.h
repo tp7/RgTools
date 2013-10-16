@@ -180,6 +180,44 @@ static RG_FORCEINLINE __m128i select_on_equal(__m128i &cmp1, __m128i &cmp2, __m1
 
 
 template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode5_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto mal1 = _mm_max_epu8(a1, a8);
+    auto mil1 = _mm_min_epu8(a1, a8);
+
+    auto mal2 = _mm_max_epu8(a2, a7);
+    auto mil2 = _mm_min_epu8(a2, a7);
+
+    auto mal3 = _mm_max_epu8(a3, a6);
+    auto mil3 = _mm_min_epu8(a3, a6);
+
+    auto mal4 = _mm_max_epu8(a4, a5);
+    auto mil4 = _mm_min_epu8(a4, a5);
+
+    auto clipped1 = clip(c, mil1, mal1);
+    auto clipped2 = clip(c, mil2, mal2);
+    auto clipped3 = clip(c, mil3, mal3);
+    auto clipped4 = clip(c, mil4, mal4);
+
+    auto c1 = abs_diff(c, clipped1);
+    auto c2 = abs_diff(c, clipped2);
+    auto c3 = abs_diff(c, clipped3);
+    auto c4 = abs_diff(c, clipped4);
+
+    auto mindiff = _mm_min_epu8(c1, c2);
+    mindiff = _mm_min_epu8(mindiff, c3);
+    mindiff = _mm_min_epu8(mindiff, c4);
+
+    auto result = select_on_equal(mindiff, c1, c, clipped1);
+    result = select_on_equal(mindiff, c3, result, clipped3);
+    result = select_on_equal(mindiff, c2, result, clipped2);
+    return select_on_equal(mindiff, c4, result, clipped4);
+}
+
+
+
+template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode6_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
 
@@ -341,6 +379,37 @@ RG_FORCEINLINE __m128i rg_mode9_sse(const Byte* pSrc, int srcPitch) {
     return select_on_equal(mindiff, d4, result, clip(c, mil4, mal4));
 }
 
+
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode10_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto d1 = abs_diff(c, a1);
+    auto d2 = abs_diff(c, a2);
+    auto d3 = abs_diff(c, a3);
+    auto d4 = abs_diff(c, a4);
+    auto d5 = abs_diff(c, a5);
+    auto d6 = abs_diff(c, a6);
+    auto d7 = abs_diff(c, a7);
+    auto d8 = abs_diff(c, a8);
+
+    auto mindiff = _mm_min_epu8(d1, d2);
+    mindiff = _mm_min_epu8(mindiff, d3);
+    mindiff = _mm_min_epu8(mindiff, d4);
+    mindiff = _mm_min_epu8(mindiff, d5);
+    mindiff = _mm_min_epu8(mindiff, d6);
+    mindiff = _mm_min_epu8(mindiff, d7);
+    mindiff = _mm_min_epu8(mindiff, d8);
+
+    auto result = select_on_equal(mindiff, d4, c, a4);
+    result = select_on_equal(mindiff, d5, result, a5);
+    result = select_on_equal(mindiff, d1, result, a1);
+    result = select_on_equal(mindiff, d3, result, a3);
+    result = select_on_equal(mindiff, d2, result, a2);
+    result = select_on_equal(mindiff, d6, result, a6);
+    result = select_on_equal(mindiff, d8, result, a8);
+    return select_on_equal(mindiff, d7, result, a7);
+}
 
 
 
