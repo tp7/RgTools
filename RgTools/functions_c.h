@@ -386,7 +386,7 @@ RG_FORCEINLINE Byte rg_mode20_cpp(const Byte* pSrc, int srcPitch) {
     return val;
 }
 
-
+//this does not match
 RG_FORCEINLINE Byte rg_mode21_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
@@ -426,7 +426,7 @@ RG_FORCEINLINE Byte rg_mode23_cpp(const Byte* pSrc, int srcPitch) {
 
     auto mal1 = std::max(a1, a8);
     auto mil1 = std::min(a1, a8);
-
+    
     auto mal2 = std::max(a2, a7);
     auto mil2 = std::min(a2, a7);
 
@@ -436,16 +436,21 @@ RG_FORCEINLINE Byte rg_mode23_cpp(const Byte* pSrc, int srcPitch) {
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    auto u1 = std::min(c - mal1, mal1 - mil1); // note that we can use saturating subtraction here because we don't care if u* is negative
-    auto u2 = std::min(c - mal2, mal2 - mil2);
-    auto u3 = std::min(c - mal3, mal3 - mil3);
-    auto u4 = std::min(c - mal4, mal4 - mil4);
+    auto linediff1 = mal1 - mil1;
+    auto linediff2 = mal2 - mil2;
+    auto linediff3 = mal3 - mil3;
+    auto linediff4 = mal4 - mil4;
+
+    auto u1 = std::min(c - mal1, linediff1);
+    auto u2 = std::min(c - mal2, linediff2);
+    auto u3 = std::min(c - mal3, linediff3);
+    auto u4 = std::min(c - mal4, linediff4);
     auto u =  std::max(std::max(std::max(std::max(u1, u2), u3), u4), 0);
 
-    auto d1 = std::min(mil1 - c, mal1 - mil1); // likewise, saturating subtraction here too
-    auto d2 = std::min(mil2 - c, mal2 - mil2);
-    auto d3 = std::min(mil3 - c, mal3 - mil3);
-    auto d4 = std::min(mil4 - c, mal4 - mil4);
+    auto d1 = std::min(mil1 - c, linediff1);
+    auto d2 = std::min(mil2 - c, linediff2);
+    auto d3 = std::min(mil3 - c, linediff3);
+    auto d4 = std::min(mil4 - c, linediff4);
     auto d = std::max(std::max(std::max(std::max(d1, d2), d3), d4), 0);
 
     return c - u + d; // this probably will never overflow.
@@ -467,16 +472,31 @@ RG_FORCEINLINE Byte rg_mode24_cpp(const Byte* pSrc, int srcPitch) {
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    auto u1 = std::min(c - mal1, mal1 - mil1 -(c - mal1)); // as above, satsub
-    auto u2 = std::min(c - mal2, mal2 - mil2 -(c - mal2));
-    auto u3 = std::min(c - mal3, mal3 - mil3 -(c - mal3));
-    auto u4 = std::min(c - mal4, mal4 - mil4 -(c - mal4));
+    auto linediff1 = mal1 - mil1;
+    auto linediff2 = mal2 - mil2;
+    auto linediff3 = mal3 - mil3;
+    auto linediff4 = mal4 - mil4;
+
+    auto t1 = c - mal1;
+    auto t2 = c - mal2;
+    auto t3 = c - mal3;
+    auto t4 = c - mal4;
+
+    auto u1 = std::min(t1, linediff1 - t1);
+    auto u2 = std::min(t2, linediff2 - t2);
+    auto u3 = std::min(t3, linediff3 - t3);
+    auto u4 = std::min(t4, linediff4 - t4);
     auto u = std::max(std::max(std::max(std::max(u1, u2), u3), u4), 0);
 
-    auto d1 = std::min(mil1 - c, mal1 - mil1 - (mil1 - c)); // satsub etc.
-    auto d2 = std::min(mil2 - c, mal2 - mil2 - (mil2 - c));
-    auto d3 = std::min(mil3 - c, mal3 - mil3 - (mil3 - c));
-    auto d4 = std::min(mil4 - c, mal4 - mil4 - (mil4 - c));
+    t1 = mil1 - c;
+    t2 = mil2 - c;
+    t3 = mil3 - c;
+    t4 = mil4 - c;
+
+    auto d1 = std::min(t1, linediff1 - t1);
+    auto d2 = std::min(t2, linediff2 - t2);
+    auto d3 = std::min(t3, linediff3 - t3);
+    auto d4 = std::min(t4, linediff4 - t4);
     auto d = std::max(std::max(std::max(std::max(d1, d2), d3), d4), 0);
 
     return c - u + d;

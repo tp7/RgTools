@@ -118,21 +118,21 @@ PlaneProcessor* sse2_functions[] = {
     process_plane_sse<rg_mode7_sse<SSE2>>,
     process_plane_sse<rg_mode8_sse<SSE2>>,
     process_plane_sse<rg_mode9_sse<SSE2>>,
-    process_plane_c<rg_mode10_cpp>,
+    process_plane_sse<rg_mode10_sse<SSE2>>,
     process_plane_c<rg_mode11_cpp>,
     process_plane_c<rg_mode12_cpp>,
-    process_even_rows_c<rg_mode13_and14_cpp>,
-    process_odd_rows_c<rg_mode13_and14_cpp>,
+    process_even_rows_sse<rg_mode13_and14_sse<SSE2>>,
+    process_odd_rows_sse<rg_mode13_and14_sse<SSE2>>,
     process_even_rows_c<rg_mode15_and16_cpp>,
     process_odd_rows_c<rg_mode15_and16_cpp>,
-    process_plane_c<rg_mode17_cpp>,
-    process_plane_c<rg_mode18_cpp>,
-    process_plane_c<rg_mode19_cpp>,
+    process_plane_sse<rg_mode17_sse<SSE2>>,
+    process_plane_sse<rg_mode18_sse<SSE2>>,
+    process_plane_sse<rg_mode19_sse<SSE2>>,
     process_plane_c<rg_mode20_cpp>,
     process_plane_c<rg_mode21_cpp>,
-    process_plane_c<rg_mode22_cpp>,
-    process_plane_c<rg_mode23_cpp>,
-    process_plane_c<rg_mode24_cpp>
+    process_plane_sse<rg_mode22_sse<SSE2>>,
+    process_plane_sse<rg_mode23_sse<SSE2>>,
+    process_plane_sse<rg_mode24_sse<SSE2>>,
 };
 
 PlaneProcessor* sse3_functions[] = {
@@ -156,12 +156,12 @@ PlaneProcessor* sse3_functions[] = {
     process_odd_rows_c<rg_mode15_and16_cpp>,
     process_plane_sse<rg_mode17_sse<SSE3>>,
     process_plane_sse<rg_mode18_sse<SSE3>>,
-    process_plane_c<rg_mode19_cpp>,
+    process_plane_sse<rg_mode19_sse<SSE3>>,
     process_plane_c<rg_mode20_cpp>,
     process_plane_c<rg_mode21_cpp>,
-    process_plane_c<rg_mode22_cpp>,
-    process_plane_c<rg_mode23_cpp>,
-    process_plane_c<rg_mode24_cpp>
+    process_plane_sse<rg_mode22_sse<SSE3>>,
+    process_plane_sse<rg_mode23_sse<SSE3>>,
+    process_plane_sse<rg_mode24_sse<SSE3>>,
 };
 
 PlaneProcessor* c_functions[] = {
