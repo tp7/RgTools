@@ -444,15 +444,10 @@ RG_FORCEINLINE __m128i rg_mode17_sse(const Byte* pSrc, int srcPitch) {
     auto mal4 = _mm_max_epu8(a4, a5);
     auto mil4 = _mm_min_epu8(a4, a5);
 
-    auto d1 = _mm_subs_epu8(mal1, mil1);
-    auto d2 = _mm_subs_epu8(mal2, mil2);
-    auto d3 = _mm_subs_epu8(mal3, mil3);
-    auto d4 = _mm_subs_epu8(mal4, mil4);
-
     auto lower = _mm_max_epu8(mil1, mil2);
     lower = _mm_max_epu8(lower, mil3);
     lower = _mm_max_epu8(lower, mil4);
-    
+
     auto upper = _mm_min_epu8(mal1, mal2);
     upper = _mm_min_epu8(upper, mal3);
     upper = _mm_min_epu8(upper, mal4);
@@ -519,21 +514,22 @@ RG_FORCEINLINE __m128i rg_mode22_sse(const Byte* pSrc, int srcPitch) {
 
     auto l1 = _mm_avg_epu8(a1, a8);
     auto l2 = _mm_avg_epu8(a2, a7);
-    auto l3 = _mm_avg_epu8(a3, a6);
-    auto l4 = _mm_avg_epu8(a4, a5);
 
     auto ma = _mm_max_epu8(l1, l2);
-    ma = _mm_max_epu8(ma, l3);
-    ma = _mm_max_epu8(ma, l4);
-
     auto mi = _mm_min_epu8(l1, l2);
+
+    auto l3 = _mm_avg_epu8(a3, a6);
+    ma = _mm_max_epu8(ma, l3);
     mi = _mm_min_epu8(mi, l3);
+
+    auto l4 = _mm_avg_epu8(a4, a5);
+    ma = _mm_max_epu8(ma, l4);
     mi = _mm_min_epu8(mi, l4);
 
     return simd_clip(c, mi, ma);
 }
 
-
+//optimized. 
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode23_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
@@ -563,7 +559,6 @@ RG_FORCEINLINE __m128i rg_mode23_sse(const Byte* pSrc, int srcPitch) {
     auto u = _mm_max_epu8(u1, u2);
     u = _mm_max_epu8(u, u3);
     u = _mm_max_epu8(u, u4);
-    u = _mm_max_epu8(u, _mm_setzero_si128());
 
     auto d1 = _mm_min_epu8(_mm_subs_epu8(mil1, c), linediff1);
     auto d2 = _mm_min_epu8(_mm_subs_epu8(mil2, c), linediff2);
@@ -573,62 +568,55 @@ RG_FORCEINLINE __m128i rg_mode23_sse(const Byte* pSrc, int srcPitch) {
     auto d = _mm_max_epu8(d1, d2);
     d = _mm_max_epu8(d, d3);
     d = _mm_max_epu8(d, d4);
-    d = _mm_max_epu8(d, _mm_setzero_si128());
 
     return _mm_adds_epu8(_mm_subs_epu8(c, u), d);
 }
 
-
+//optimized, todo: decide how to name the function and extract this stuff. Order is important.
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode24_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
 
-    auto mal1 = _mm_max_epu8(a1, a8);
-    auto mil1 = _mm_min_epu8(a1, a8);
+    auto mal  = _mm_max_epu8(a1, a8);
+    auto mil  = _mm_min_epu8(a1, a8);
+    auto diff = _mm_subs_epu8(mal, mil);
+    auto temp = _mm_subs_epu8(c, mal);
+    auto u1   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+    temp      = _mm_subs_epu8(mil, c);
+    auto d1   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
 
-    auto mal2 = _mm_max_epu8(a2, a7);
-    auto mil2 = _mm_min_epu8(a2, a7);
-
-    auto mal3 = _mm_max_epu8(a3, a6);
-    auto mil3 = _mm_min_epu8(a3, a6);
-
-    auto mal4 = _mm_max_epu8(a4, a5);
-    auto mil4 = _mm_min_epu8(a4, a5);
-
-    auto linediff1 = _mm_subs_epu8(mal1, mil1);
-    auto linediff2 = _mm_subs_epu8(mal2, mil2);
-    auto linediff3 = _mm_subs_epu8(mal3, mil3);
-    auto linediff4 = _mm_subs_epu8(mal4, mil4);
-
-    auto t1 = _mm_subs_epu8(c, mal1);
-    auto t2 = _mm_subs_epu8(c, mal2);
-    auto t3 = _mm_subs_epu8(c, mal3);
-    auto t4 = _mm_subs_epu8(c, mal4);
-
-    auto u1 = _mm_min_epu8(t1, _mm_subs_epu8(linediff1, t1));
-    auto u2 = _mm_min_epu8(t2, _mm_subs_epu8(linediff2, t2));
-    auto u3 = _mm_min_epu8(t3, _mm_subs_epu8(linediff3, t3));
-    auto u4 = _mm_min_epu8(t4, _mm_subs_epu8(linediff4, t4));
-
-    auto u = _mm_max_epu8(u1, u2);
-    u = _mm_max_epu8(u, u3);
-    u = _mm_max_epu8(u, u4);
-    u = _mm_max_epu8(u, _mm_setzero_si128());
-
-    t1 = _mm_subs_epu8(mil1, c);
-    t2 = _mm_subs_epu8(mil2, c);
-    t3 = _mm_subs_epu8(mil3, c);
-    t4 = _mm_subs_epu8(mil4, c);
-
-    auto d1 = _mm_min_epu8(t1, _mm_subs_epu8(linediff1, t1));
-    auto d2 = _mm_min_epu8(t2, _mm_subs_epu8(linediff2, t2));
-    auto d3 = _mm_min_epu8(t3, _mm_subs_epu8(linediff3, t3));
-    auto d4 = _mm_min_epu8(t4, _mm_subs_epu8(linediff4, t4));
+    mal       = _mm_max_epu8(a2, a7);
+    mil       = _mm_min_epu8(a2, a7);
+    diff      = _mm_subs_epu8(mal, mil);
+    temp      = _mm_subs_epu8(c, mal);
+    auto u2   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+    temp      = _mm_subs_epu8(mil, c);
+    auto d2   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
 
     auto d = _mm_max_epu8(d1, d2);
+    auto u = _mm_max_epu8(u1, u2);
+
+    mal       = _mm_max_epu8(a3, a6);
+    mil       = _mm_min_epu8(a3, a6);
+    diff      = _mm_subs_epu8(mal, mil);
+    temp      = _mm_subs_epu8(c, mal);
+    auto u3   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+    temp      = _mm_subs_epu8(mil, c);
+    auto d3   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+
     d = _mm_max_epu8(d, d3);
+    u = _mm_max_epu8(u, u3);
+
+    mal       = _mm_max_epu8(a4, a5);
+    mil       = _mm_min_epu8(a4, a5);
+    diff      = _mm_subs_epu8(mal, mil);
+    temp      = _mm_subs_epu8(c, mal);
+    auto u4   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+    temp      = _mm_subs_epu8(mil, c);
+    auto d4   = _mm_min_epu8(temp, _mm_subs_epu8(diff, temp));
+
     d = _mm_max_epu8(d, d4);
-    d = _mm_max_epu8(d, _mm_setzero_si128());
+    u = _mm_max_epu8(u, u4);
 
     return _mm_adds_epu8(_mm_subs_epu8(c, u), d);
 }

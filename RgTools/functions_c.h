@@ -390,20 +390,20 @@ RG_FORCEINLINE Byte rg_mode20_cpp(const Byte* pSrc, int srcPitch) {
 RG_FORCEINLINE Byte rg_mode21_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    Byte l1a = (a1 + a8) / 2;
-    Byte l2a = (a2 + a7) / 2;
-    Byte l3a = (a3 + a6) / 2;
-    Byte l4a = (a4 + a5) / 2;
+    int l1a = (a1 + a8) / 2;
+    int l2a = (a2 + a7) / 2;
+    int l3a = (a3 + a6) / 2;
+    int l4a = (a4 + a5) / 2;
 
-    Byte l1b = (a1 + a8 + 1) / 2;
-    Byte l2b = (a2 + a7 + 1) / 2;
-    Byte l3b = (a3 + a6 + 1) / 2;
-    Byte l4b = (a4 + a5 + 1) / 2;
+    int l1b = (a1 + a8 + 1) / 2;
+    int l2b = (a2 + a7 + 1) / 2;
+    int l3b = (a3 + a6 + 1) / 2;
+    int l4b = (a4 + a5 + 1) / 2;
 
     auto ma = std::max(std::max(std::max(l1b, l2b), l3b), l4b);
     auto mi = std::min(std::min(std::min(l1a, l2a), l3a), l4a);
 
-    return clip(c, mi, ma);
+    return clip((int)c, mi, ma);
 }
 
 

@@ -64,6 +64,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <UseProcessorExtensions>None</UseProcessorExtensions>
+      <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
+      <AssemblerOutput>AssemblyCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
