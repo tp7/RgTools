@@ -39,7 +39,7 @@ static RG_FORCEINLINE __m128i simd_loadu_si128(const Byte* ptr) {
     return _mm_lddqu_si128(reinterpret_cast<const __m128i*>(ptr));
 }
 
-static RG_FORCEINLINE __m128i clip(__m128i &val, __m128i &minimum, __m128i &maximum) {
+static RG_FORCEINLINE __m128i simd_clip(__m128i &val, __m128i &minimum, __m128i &maximum) {
     return _mm_max_epu8(_mm_min_epu8(val, maximum), minimum);
 }
 
@@ -76,7 +76,7 @@ RG_FORCEINLINE __m128i rg_mode1_sse(const Byte* pSrc, int srcPitch) {
         _mm_max_epu8(_mm_max_epu8(a5, a6), _mm_max_epu8(a7, a8))
         );
 
-    return clip(c, mi, ma);
+    return simd_clip(c, mi, ma);
 }
 
 template<InstructionSet optLevel>
@@ -107,7 +107,7 @@ RG_FORCEINLINE __m128i rg_mode2_sse(const Byte* pSrc, int srcPitch) {
     a2 = _mm_min_epu8 (a2, a3);	// sort_pair (a2, a3);
     a7 = _mm_max_epu8 (a6, a7);	// sort_pair (a6, a7);
 
-    return clip(c, a2, a7);
+    return simd_clip(c, a2, a7);
 }
 
 template<InstructionSet optLevel>
@@ -138,7 +138,7 @@ RG_FORCEINLINE __m128i rg_mode3_sse(const Byte* pSrc, int srcPitch) {
     a3 = _mm_max_epu8(a2, a3);	// sort_pair (a2, a3);
     a6 = _mm_min_epu8(a6, a7);	// sort_pair (a6, a7);
 
-    return clip(c, a3, a6);
+    return simd_clip(c, a3, a6);
 }
 
 template<InstructionSet optLevel>
@@ -170,7 +170,7 @@ RG_FORCEINLINE __m128i rg_mode4_sse(const Byte* pSrc, int srcPitch) {
     sort_pair (a4, a5);
     // sort_pair (a6, a7);
 
-    return clip(c, a4, a5);
+    return simd_clip(c, a4, a5);
 }
 
 static RG_FORCEINLINE __m128i select_on_equal(__m128i &cmp1, __m128i &cmp2, __m128i &current, __m128i &desired) {
@@ -195,10 +195,10 @@ RG_FORCEINLINE __m128i rg_mode5_sse(const Byte* pSrc, int srcPitch) {
     auto mal4 = _mm_max_epu8(a4, a5);
     auto mil4 = _mm_min_epu8(a4, a5);
 
-    auto clipped1 = clip(c, mil1, mal1);
-    auto clipped2 = clip(c, mil2, mal2);
-    auto clipped3 = clip(c, mil3, mal3);
-    auto clipped4 = clip(c, mil4, mal4);
+    auto clipped1 = simd_clip(c, mil1, mal1);
+    auto clipped2 = simd_clip(c, mil2, mal2);
+    auto clipped3 = simd_clip(c, mil3, mal3);
+    auto clipped4 = simd_clip(c, mil4, mal4);
 
     auto c1 = abs_diff(c, clipped1);
     auto c2 = abs_diff(c, clipped2);
@@ -238,10 +238,10 @@ RG_FORCEINLINE __m128i rg_mode6_sse(const Byte* pSrc, int srcPitch) {
     auto d3 = _mm_subs_epu8(mal3, mil3);
     auto d4 = _mm_subs_epu8(mal4, mil4);
 
-    auto clipped1 = clip(c, mil1, mal1);
-    auto clipped2 = clip(c, mil2, mal2);
-    auto clipped3 = clip(c, mil3, mal3);
-    auto clipped4 = clip(c, mil4, mal4);
+    auto clipped1 = simd_clip(c, mil1, mal1);
+    auto clipped2 = simd_clip(c, mil2, mal2);
+    auto clipped3 = simd_clip(c, mil3, mal3);
+    auto clipped4 = simd_clip(c, mil4, mal4);
 
     auto absdiff1 = abs_diff(c, clipped1);
     auto absdiff2 = abs_diff(c, clipped2);
@@ -285,10 +285,10 @@ RG_FORCEINLINE __m128i rg_mode7_sse(const Byte* pSrc, int srcPitch) {
     auto d3 = _mm_subs_epu8(mal3, mil3);
     auto d4 = _mm_subs_epu8(mal4, mil4);
 
-    auto clipped1 = clip(c, mil1, mal1);
-    auto clipped2 = clip(c, mil2, mal2);
-    auto clipped3 = clip(c, mil3, mal3);
-    auto clipped4 = clip(c, mil4, mal4);
+    auto clipped1 = simd_clip(c, mil1, mal1);
+    auto clipped2 = simd_clip(c, mil2, mal2);
+    auto clipped3 = simd_clip(c, mil3, mal3);
+    auto clipped4 = simd_clip(c, mil4, mal4);
     //todo: what happens when this overflows?
     auto c1 = _mm_adds_epu8(abs_diff(c, clipped1), d1);
     auto c2 = _mm_adds_epu8(abs_diff(c, clipped2), d2);
@@ -327,10 +327,10 @@ RG_FORCEINLINE __m128i rg_mode8_sse(const Byte* pSrc, int srcPitch) {
     auto d3 = _mm_subs_epu8(mal3, mil3);
     auto d4 = _mm_subs_epu8(mal4, mil4);
 
-    auto clipped1 = clip(c, mil1, mal1);
-    auto clipped2 = clip(c, mil2, mal2);
-    auto clipped3 = clip(c, mil3, mal3);
-    auto clipped4 = clip(c, mil4, mal4);
+    auto clipped1 = simd_clip(c, mil1, mal1);
+    auto clipped2 = simd_clip(c, mil2, mal2);
+    auto clipped3 = simd_clip(c, mil3, mal3);
+    auto clipped4 = simd_clip(c, mil4, mal4);
 
     auto c1 = _mm_adds_epu8(abs_diff(c, clipped1), _mm_adds_epu8(d1, d1));
     auto c2 = _mm_adds_epu8(abs_diff(c, clipped2), _mm_adds_epu8(d2, d2));
@@ -373,10 +373,10 @@ RG_FORCEINLINE __m128i rg_mode9_sse(const Byte* pSrc, int srcPitch) {
     mindiff = _mm_min_epu8(mindiff, d3);
     mindiff = _mm_min_epu8(mindiff, d4);
 
-    auto result = select_on_equal(mindiff, d1, c, clip(c, mil1, mal1));
-    result = select_on_equal(mindiff, d3, result, clip(c, mil3, mal3));
-    result = select_on_equal(mindiff, d2, result, clip(c, mil2, mal2));
-    return select_on_equal(mindiff, d4, result, clip(c, mil4, mal4));
+    auto result = select_on_equal(mindiff, d1, c, simd_clip(c, mil1, mal1));
+    result = select_on_equal(mindiff, d3, result, simd_clip(c, mil3, mal3));
+    result = select_on_equal(mindiff, d2, result, simd_clip(c, mil2, mal2));
+    return select_on_equal(mindiff, d4, result, simd_clip(c, mil4, mal4));
 }
 
 
@@ -411,6 +411,90 @@ RG_FORCEINLINE __m128i rg_mode10_sse(const Byte* pSrc, int srcPitch) {
     return select_on_equal(mindiff, d7, result, a7);
 }
 
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode13_and14_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
 
+    auto d1 = abs_diff(a1, a8);
+    auto d2 = abs_diff(a2, a7);
+    auto d3 = abs_diff(a3, a6);
+
+    auto mindiff = _mm_min_epu8(d1, d2);
+    mindiff = _mm_min_epu8(mindiff, d3);
+
+    auto result = select_on_equal(mindiff, d1, c, _mm_avg_epu8(a1, a8));
+    result = select_on_equal(mindiff, d3, result,  _mm_avg_epu8(a3, a6));
+    return select_on_equal(mindiff, d2, result,  _mm_avg_epu8(a2, a7));
+}
+
+
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode17_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto mal1 = _mm_max_epu8(a1, a8);
+    auto mil1 = _mm_min_epu8(a1, a8);
+
+    auto mal2 = _mm_max_epu8(a2, a7);
+    auto mil2 = _mm_min_epu8(a2, a7);
+
+    auto mal3 = _mm_max_epu8(a3, a6);
+    auto mil3 = _mm_min_epu8(a3, a6);
+
+    auto mal4 = _mm_max_epu8(a4, a5);
+    auto mil4 = _mm_min_epu8(a4, a5);
+
+    auto d1 = _mm_subs_epu8(mal1, mil1);
+    auto d2 = _mm_subs_epu8(mal2, mil2);
+    auto d3 = _mm_subs_epu8(mal3, mil3);
+    auto d4 = _mm_subs_epu8(mal4, mil4);
+
+    auto lower = _mm_max_epu8(mil1, mil2);
+    lower = _mm_max_epu8(lower, mil3);
+    lower = _mm_max_epu8(lower, mil4);
+    
+    auto upper = _mm_min_epu8(mal1, mal2);
+    upper = _mm_min_epu8(upper, mal3);
+    upper = _mm_min_epu8(upper, mal4);
+
+    auto real_upper = _mm_max_epu8(upper, lower);
+    auto real_lower = _mm_min_epu8(upper, lower);
+
+    return simd_clip(c, real_lower, real_upper);
+}
+
+
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode18_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto absdiff1 = abs_diff(c, a1);
+    auto absdiff2 = abs_diff(c, a2);
+    auto absdiff3 = abs_diff(c, a3);
+    auto absdiff4 = abs_diff(c, a4);
+    auto absdiff5 = abs_diff(c, a5);
+    auto absdiff6 = abs_diff(c, a6);
+    auto absdiff7 = abs_diff(c, a7);
+    auto absdiff8 = abs_diff(c, a8);
+
+    auto d1 = _mm_max_epu8(absdiff1, absdiff8);
+    auto d2 = _mm_max_epu8(absdiff2, absdiff7);
+    auto d3 = _mm_max_epu8(absdiff3, absdiff6);
+    auto d4 = _mm_max_epu8(absdiff4, absdiff5);
+
+    auto mindiff = _mm_min_epu8(d1, d2);
+    mindiff = _mm_min_epu8(mindiff, d3);
+    mindiff = _mm_min_epu8(mindiff, d4);
+    
+    __m128i c1 = simd_clip(c, _mm_min_epu8(a1, a8), _mm_max_epu8(a1, a8));
+    __m128i c2 = simd_clip(c, _mm_min_epu8(a2, a7), _mm_max_epu8(a2, a7));
+    __m128i c3 = simd_clip(c, _mm_min_epu8(a3, a6), _mm_max_epu8(a3, a6));
+    __m128i c4 = simd_clip(c, _mm_min_epu8(a4, a5), _mm_max_epu8(a4, a5));
+    
+    auto result = select_on_equal(mindiff, d1, c, c1);
+    result = select_on_equal(mindiff, d3, result, c3);
+    result = select_on_equal(mindiff, d2, result, c2);
+    return select_on_equal(mindiff, d4, result, c4);
+}
 
 #endif

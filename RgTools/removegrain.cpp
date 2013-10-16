@@ -24,6 +24,34 @@ void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, in
     }
 }
 
+
+template<SseModeProcessor processor>
+void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    pSrc += srcPitch;
+    pDst += dstPitch;
+    for (int y = 1; y < height-1; ++y) {
+        for (int x = 1; x < width-1; x+=16) {
+            __m128i result = processor(pSrc+x, srcPitch);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
+        }
+
+        pSrc += srcPitch*2;
+        pDst += dstPitch*2;
+    }
+}
+
+template<SseModeProcessor processor>
+void process_even_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    env->BitBlt(pDst+dstPitch, dstPitch*2, pSrc+srcPitch, srcPitch*2, width, height/2);
+    process_halfplane_sse<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height/2, srcPitch, dstPitch);
+}
+
+template<SseModeProcessor processor>
+void process_odd_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    env->BitBlt(pDst, dstPitch*2, pSrc, srcPitch*2, width, height/2);
+    process_halfplane_sse<processor>(env, pSrc, pDst, width, height/2, srcPitch, dstPitch);
+}
+
 template<CModeProcessor processor>
 void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     pSrc += srcPitch;
@@ -122,12 +150,12 @@ PlaneProcessor* sse3_functions[] = {
     process_plane_sse<rg_mode10_sse<SSE3>>,
     process_plane_c<rg_mode11_cpp>,
     process_plane_c<rg_mode12_cpp>,
-    process_even_rows_c<rg_mode13_and14_cpp>,
-    process_odd_rows_c<rg_mode13_and14_cpp>,
+    process_even_rows_sse<rg_mode13_and14_sse<SSE3>>,
+    process_odd_rows_sse<rg_mode13_and14_sse<SSE3>>,
     process_even_rows_c<rg_mode15_and16_cpp>,
     process_odd_rows_c<rg_mode15_and16_cpp>,
-    process_plane_c<rg_mode17_cpp>,
-    process_plane_c<rg_mode18_cpp>,
+    process_plane_sse<rg_mode17_sse<SSE3>>,
+    process_plane_sse<rg_mode18_sse<SSE3>>,
     process_plane_c<rg_mode19_cpp>,
     process_plane_c<rg_mode20_cpp>,
     process_plane_c<rg_mode21_cpp>,
