@@ -413,7 +413,6 @@ RG_FORCEINLINE __m128i rg_mode10_sse(const Byte* pSrc, int srcPitch) {
     return select_on_equal(mindiff, d7, result, a7);
 }
 
-
 RG_FORCEINLINE __m128i rg_mode12_sse(const Byte* pSrc, int srcPitch);
 //todo: actually implement is as mode 11
 template<InstructionSet optLevel>
@@ -573,6 +572,67 @@ RG_FORCEINLINE __m128i rg_mode19_sse(const Byte* pSrc, int srcPitch) {
     return val;
 }
 
+//todo: probably extract a function with 12 arguments?
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode20_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto zero = _mm_setzero_si128();
+    auto onenineth = _mm_set1_epi16((unsigned short)(((1u << 16) + 4) / 9));
+    auto bias = _mm_set1_epi16(4);
+
+    auto a1unpck_lo = _mm_unpacklo_epi8(a1, zero);
+    auto a2unpck_lo = _mm_unpacklo_epi8(a2, zero);
+    auto a3unpck_lo = _mm_unpacklo_epi8(a3, zero);
+    auto a4unpck_lo = _mm_unpacklo_epi8(a4, zero);
+    auto a5unpck_lo = _mm_unpacklo_epi8(a5, zero);
+    auto a6unpck_lo = _mm_unpacklo_epi8(a6, zero);
+    auto a7unpck_lo = _mm_unpacklo_epi8(a7, zero);
+    auto a8unpck_lo = _mm_unpacklo_epi8(a8, zero);
+    auto cunpck_lo  = _mm_unpacklo_epi8(c, zero);
+
+    auto sum_t1 = _mm_adds_epu16(a1unpck_lo, a2unpck_lo);
+    sum_t1 = _mm_adds_epu16(sum_t1, a3unpck_lo);
+    sum_t1 = _mm_adds_epu16(sum_t1, a4unpck_lo);
+
+    auto sum_t2 = _mm_adds_epu16(a5unpck_lo, a6unpck_lo);
+    sum_t2 = _mm_adds_epu16(sum_t2, a7unpck_lo);
+    sum_t2 = _mm_adds_epu16(sum_t2, a8unpck_lo);
+
+    auto sum = _mm_adds_epu16(sum_t1, sum_t2);
+    sum = _mm_adds_epu16(sum, cunpck_lo);
+    sum = _mm_adds_epu16(sum, bias);
+    
+    auto result_lo = _mm_mulhi_epu16(sum, onenineth);
+    
+
+    auto a1unpck_hi = _mm_unpackhi_epi8(a1, zero);
+    auto a2unpck_hi = _mm_unpackhi_epi8(a2, zero);
+    auto a3unpck_hi = _mm_unpackhi_epi8(a3, zero);
+    auto a4unpck_hi = _mm_unpackhi_epi8(a4, zero);
+    auto a5unpck_hi = _mm_unpackhi_epi8(a5, zero);
+    auto a6unpck_hi = _mm_unpackhi_epi8(a6, zero);
+    auto a7unpck_hi = _mm_unpackhi_epi8(a7, zero);
+    auto a8unpck_hi = _mm_unpackhi_epi8(a8, zero);
+    auto cunpck_hi  = _mm_unpackhi_epi8(c, zero);
+
+    sum_t1 = _mm_adds_epu16(a1unpck_hi, a2unpck_hi);
+    sum_t1 = _mm_adds_epu16(sum_t1, a3unpck_hi);
+    sum_t1 = _mm_adds_epu16(sum_t1, a4unpck_hi);
+
+    sum_t2 = _mm_adds_epu16(a5unpck_hi, a6unpck_hi);
+    sum_t2 = _mm_adds_epu16(sum_t2, a7unpck_hi);
+    sum_t2 = _mm_adds_epu16(sum_t2, a8unpck_hi);
+
+    sum = _mm_adds_epu16(sum_t1, sum_t2);
+    sum = _mm_adds_epu16(sum, cunpck_hi);
+    sum = _mm_adds_epu16(sum, bias);
+
+    auto result_hi = _mm_mulhi_epu16(sum, onenineth);
+    
+    return _mm_packus_epi16(result_lo, result_hi);
+}
+
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode21_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
@@ -597,7 +657,6 @@ RG_FORCEINLINE __m128i rg_mode21_sse(const Byte* pSrc, int srcPitch) {
 
     return simd_clip(c, mi, ma);
 }
-
 
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode22_sse(const Byte* pSrc, int srcPitch) {
