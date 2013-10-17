@@ -224,9 +224,9 @@ PlaneProcessor* c_functions[] = {
     process_plane_c<rg_mode24_cpp>
 };
 
-class RemoveGrain2 : public GenericVideoFilter {
+class RemoveGrain : public GenericVideoFilter {
 public:
-    RemoveGrain2(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env);
+    RemoveGrain(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env);
 
     PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
 
@@ -241,7 +241,7 @@ private:
 };
 
 
-RemoveGrain2::RemoveGrain2(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
+RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
     : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
         if(!vi.IsPlanar()) {
             env->ThrowError("RemoveGrain2 works only with planar colorspaces");
@@ -270,10 +270,14 @@ RemoveGrain2::RemoveGrain2(PClip child, int mode, int modeU, int modeV, const ch
                 functions = c_functions;
             }
         }
+
+        if (vi.width < 17) { //not enough for XMM
+            functions = c_functions;
+        }
 }
 
 
-PVideoFrame RemoveGrain2::GetFrame(int n, IScriptEnvironment* env) {
+PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
     auto srcFrame = child->GetFrame(n, env);
     auto dstFrame = env->NewVideoFrame(vi, 16);
     
@@ -293,7 +297,7 @@ PVideoFrame RemoveGrain2::GetFrame(int n, IScriptEnvironment* env) {
 
 AVSValue __cdecl Create_RemoveGrain2(AVSValue args, void*, IScriptEnvironment* env) {
     enum { CLIP, MODE, MODEU, MODEV, OPTIMIZATION };
-    return new RemoveGrain2(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain2::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain2::UNDEFINED_MODE), args[OPTIMIZATION].AsString(nullptr), env);
+    return new RemoveGrain(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain::UNDEFINED_MODE), args[OPTIMIZATION].AsString(nullptr), env);
 }
 
 const AVS_Linkage *AVS_linkage = nullptr;
