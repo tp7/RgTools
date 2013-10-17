@@ -11,17 +11,23 @@
 
 template<SseModeProcessor processor>
 void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
+
     pSrc += srcPitch;
     pDst += dstPitch;
     for (int y = 1; y < height-1; ++y) {
+        pDst[0] = pSrc[0];
         for (int x = 1; x < width-1; x+=16) {
             __m128i result = processor(pSrc+x, srcPitch);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
         }
+        pDst[width-1] = pSrc[width-1];
 
         pSrc += srcPitch;
         pDst += dstPitch;
     }
+
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
 }
 
 
@@ -29,38 +35,75 @@ template<SseModeProcessor processor>
 void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     pSrc += srcPitch;
     pDst += dstPitch;
-    for (int y = 1; y < height-1; ++y) {
+    for (int y = 1; y < height/2; ++y) {
+        pDst[0] = (pSrc[srcPitch] + pSrc[-srcPitch] + 1) / 2;
         for (int x = 1; x < width-1; x+=16) {
             __m128i result = processor(pSrc+x, srcPitch);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
         }
+        pDst[width-1] = (pSrc[width-1 + srcPitch] + pSrc[width-1 - srcPitch] + 1) / 2;
+        pSrc += srcPitch;
+        pDst += dstPitch;
 
-        pSrc += srcPitch*2;
-        pDst += dstPitch*2;
+        env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //other field
+
+        pSrc += srcPitch;
+        pDst += dstPitch;
     }
 }
 
 template<SseModeProcessor processor>
 void process_even_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
-    env->BitBlt(pDst+dstPitch, dstPitch*2, pSrc+srcPitch, srcPitch*2, width, height/2);
-    process_halfplane_sse<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height/2, srcPitch, dstPitch);
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 2); //copy first two lines
+
+    process_halfplane_sse<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height, srcPitch, dstPitch);
 }
 
 template<SseModeProcessor processor>
 void process_odd_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
-    env->BitBlt(pDst, dstPitch*2, pSrc, srcPitch*2, width, height/2);
-    process_halfplane_sse<processor>(env, pSrc, pDst, width, height/2, srcPitch, dstPitch);
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //top border
+
+    process_halfplane_sse<processor>(env, pSrc, pDst, width, height, srcPitch, dstPitch);
+
+    env->BitBlt(pDst+dstPitch*(height-1), dstPitch, pSrc+srcPitch*(height-1), srcPitch, width, 1); //bottom border
 }
 
 template<CModeProcessor processor>
 void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
+
     pSrc += srcPitch;
     pDst += dstPitch;
     for (int y = 1; y < height-1; ++y) {
+        pDst[0] = pSrc[0];
         for (int x = 1; x < width-1; x+=1) {
             BYTE result = processor(pSrc + x, srcPitch);
             pDst[x] = result;
         }
+        pDst[width-1] = pSrc[width-1];
+
+        pSrc += srcPitch;
+        pDst += dstPitch;
+    }
+
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
+}
+
+template<CModeProcessor processor>
+void process_halfplane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+    pSrc += srcPitch;
+    pDst += dstPitch;
+    for (int y = 1; y < height/2; ++y) {
+        pDst[0] = (pSrc[srcPitch] + pSrc[-srcPitch] + 1) / 2;
+        for (int x = 1; x < width-1; x+=1) {
+            BYTE result = processor(pSrc + x, srcPitch);
+            pDst[x] = result;
+        }
+        pDst[width-1] = (pSrc[width-1 + srcPitch] + pSrc[width-1 - srcPitch] + 1) / 2;
+        pSrc += srcPitch;
+        pDst += dstPitch;
+
+        env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //other field
 
         pSrc += srcPitch;
         pDst += dstPitch;
@@ -68,31 +111,19 @@ void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int 
 }
 
 template<CModeProcessor processor>
-void process_halfplane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
-    pSrc += srcPitch;
-    pDst += dstPitch;
-    for (int y = 1; y < height-1; ++y) {
-        for (int x = 1; x < width-1; x+=1) {
-            BYTE result = processor(pSrc + x, srcPitch);
-            pDst[x] = result;
-        }
-
-        pSrc += srcPitch*2;
-        pDst += dstPitch*2;
-    }
-}
-
-
-template<CModeProcessor processor>
 void process_even_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
-    env->BitBlt(pDst+dstPitch, dstPitch*2, pSrc+srcPitch, srcPitch*2, width, height/2);
-    process_halfplane_c<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height/2, srcPitch, dstPitch);
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 2); //copy first two lines
+
+    process_halfplane_c<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height, srcPitch, dstPitch);
 }
 
 template<CModeProcessor processor>
 void process_odd_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
-    env->BitBlt(pDst, dstPitch*2, pSrc, srcPitch*2, width, height/2);
-    process_halfplane_c<processor>(env, pSrc, pDst, width, height/2, srcPitch, dstPitch);
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //top border
+
+    process_halfplane_c<processor>(env, pSrc, pDst, width, height, srcPitch, dstPitch);
+
+    env->BitBlt(pDst+dstPitch*(height-1), dstPitch, pSrc+srcPitch*(height-1), srcPitch, width, 1); //bottom border
 }
 
 void doNothing(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {

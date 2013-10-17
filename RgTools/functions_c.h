@@ -365,7 +365,7 @@ RG_FORCEINLINE Byte rg_mode18_cpp(const Byte* pSrc, int srcPitch) {
 
 RG_FORCEINLINE Byte rg_mode19_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
-
+    //this one is faster but rounded a bit differently. It's not like anyone will be using C anyway
     //int sum = a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8;
     //int val = (sum + 4) >> 3;
 
