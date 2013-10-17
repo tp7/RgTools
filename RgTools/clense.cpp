@@ -23,9 +23,7 @@ Clense::Clense(PClip child, PClip previous, PClip next, bool grey, ClenseMode mo
         if (next_ != nullptr) {
             check_if_match(vi, next_->GetVideoInfo(), env);
         }
-#pragma warning(disable: 4800) //yes this will definitely harm performance
-        sse2_ = env->GetCPUFlags() & CPUF_SSE2;
-#pragma warning(default: 4800)
+        sse2_ = vi.width > 16 && (env->GetCPUFlags() & CPUF_SSE2) ;
 }
 
 static void process_plane_c(Byte* pDst, const Byte *pSrc, const Byte* pRef1, const Byte* pRef2, int dstPitch, int srcPitch, int ref1Pitch, int ref2Pitch, int width, int height, IScriptEnvironment *env) {
