@@ -2,7 +2,6 @@
 #define __FUNCTIONS_SSE_H__
 
 #include "common.h"
-#include <smmintrin.h>
 
 typedef __m128i (SseModeProcessor)(const Byte*, int);
 
@@ -36,10 +35,6 @@ static RG_FORCEINLINE __m128i simd_loadu_si128(const Byte* ptr) {
 #endif
     }
     return _mm_lddqu_si128(reinterpret_cast<const __m128i*>(ptr));
-}
-
-static RG_FORCEINLINE __m128i simd_clip(__m128i &val, __m128i &minimum, __m128i &maximum) {
-    return _mm_max_epu8(_mm_min_epu8(val, maximum), minimum);
 }
 
 //mask ? a : b

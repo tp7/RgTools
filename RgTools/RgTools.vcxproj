@@ -74,13 +74,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="avs2x.cpp" />
+    <ClCompile Include="clense.cpp" />
     <ClCompile Include="removegrain.cpp" />
     <ClCompile Include="functions_c.h" />
     <ClCompile Include="functions_sse.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="avisynth.h" />
+    <ClInclude Include="clense.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="removegrain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

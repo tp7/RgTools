@@ -21,6 +21,12 @@
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="removegrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clense.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="removegrain.cpp">
@@ -30,6 +36,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="functions_c.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clense.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="avs2x.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

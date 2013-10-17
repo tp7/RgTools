@@ -1,16 +1,10 @@
 #include "functions_c.h"
 #include "functions_sse.h"
-
-#include <Windows.h>
-#pragma warning(disable: 4512 4244 4100)
-#include "avisynth.h"
-#pragma warning(default: 4512 4244 4100)
-
-
+#include "removegrain.h"
 
 
 template<SseModeProcessor processor>
-void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
 
     pSrc += srcPitch;
@@ -32,7 +26,7 @@ void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, in
 
 
 template<SseModeProcessor processor>
-void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     pSrc += srcPitch;
     pDst += dstPitch;
     for (int y = 1; y < height/2; ++y) {
@@ -53,14 +47,14 @@ void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst
 }
 
 template<SseModeProcessor processor>
-void process_even_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_even_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 2); //copy first two lines
 
     process_halfplane_sse<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height, srcPitch, dstPitch);
 }
 
 template<SseModeProcessor processor>
-void process_odd_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_odd_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //top border
 
     process_halfplane_sse<processor>(env, pSrc, pDst, width, height, srcPitch, dstPitch);
@@ -69,7 +63,7 @@ void process_odd_rows_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst,
 }
 
 template<CModeProcessor processor>
-void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
 
     pSrc += srcPitch;
@@ -90,7 +84,7 @@ void process_plane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int 
 }
 
 template<CModeProcessor processor>
-void process_halfplane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_halfplane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     pSrc += srcPitch;
     pDst += dstPitch;
     for (int y = 1; y < height/2; ++y) {
@@ -111,14 +105,14 @@ void process_halfplane_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, 
 }
 
 template<CModeProcessor processor>
-void process_even_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_even_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 2); //copy first two lines
 
     process_halfplane_c<processor>(env, pSrc+srcPitch, pDst+dstPitch, width, height, srcPitch, dstPitch);
 }
 
 template<CModeProcessor processor>
-void process_odd_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void process_odd_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1); //top border
 
     process_halfplane_c<processor>(env, pSrc, pDst, width, height, srcPitch, dstPitch);
@@ -126,15 +120,13 @@ void process_odd_rows_c(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, i
     env->BitBlt(pDst+dstPitch*(height-1), dstPitch, pSrc+srcPitch*(height-1), srcPitch, width, 1); //bottom border
 }
 
-void doNothing(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void doNothing(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
 
 }
 
-void copyPlane(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
+static void copyPlane(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, height);
 }
-
-typedef void (PlaneProcessor)(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch);
 
 
 PlaneProcessor* sse2_functions[] = {
@@ -224,23 +216,6 @@ PlaneProcessor* c_functions[] = {
     process_plane_c<rg_mode24_cpp>
 };
 
-class RemoveGrain : public GenericVideoFilter {
-public:
-    RemoveGrain(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env);
-
-    PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
-
-    const static int UNDEFINED_MODE = -2;
-
-private:
-    int mode_;
-    int modeU_;
-    int modeV_;
-
-    PlaneProcessor **functions;
-};
-
-
 RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
     : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
         if(!vi.IsPlanar()) {
@@ -279,7 +254,7 @@ RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, const char
 
 PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
     auto srcFrame = child->GetFrame(n, env);
-    auto dstFrame = env->NewVideoFrame(vi, 16);
+    auto dstFrame = env->NewVideoFrame(vi);
     
     functions[mode_+1](env, srcFrame->GetReadPtr(PLANAR_Y), dstFrame->GetWritePtr(PLANAR_Y), srcFrame->GetRowSize(PLANAR_Y), 
         srcFrame->GetHeight(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y));
@@ -295,16 +270,7 @@ PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
 }
 
 
-AVSValue __cdecl Create_RemoveGrain2(AVSValue args, void*, IScriptEnvironment* env) {
+AVSValue __cdecl Create_RemoveGrain(AVSValue args, void*, IScriptEnvironment* env) {
     enum { CLIP, MODE, MODEU, MODEV, OPTIMIZATION };
     return new RemoveGrain(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain::UNDEFINED_MODE), args[OPTIMIZATION].AsString(nullptr), env);
-}
-
-const AVS_Linkage *AVS_linkage = nullptr;
-
-extern "C" __declspec(dllexport) const char* __stdcall AvisynthPluginInit3(IScriptEnvironment* env, const AVS_Linkage* const vectors) {
-    AVS_linkage = vectors;
-
-    env->AddFunction("RemoveGrain2", "c[order]i[mode]i[modeUV]i[opt]s", Create_RemoveGrain2, 0);
-    return "Itai, onii-chan!";
 }
