@@ -386,7 +386,7 @@ RG_FORCEINLINE Byte rg_mode20_cpp(const Byte* pSrc, int srcPitch) {
     return val;
 }
 
-//this does not match
+//rounding does not match
 RG_FORCEINLINE Byte rg_mode21_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
