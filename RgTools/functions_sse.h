@@ -456,6 +456,44 @@ RG_FORCEINLINE __m128i rg_mode13_and14_sse(const Byte* pSrc, int srcPitch) {
     return select_on_equal(mindiff, d2, result,  _mm_avg_epu8(a2, a7));
 }
 
+//rounding does not match
+template<InstructionSet optLevel>
+RG_FORCEINLINE __m128i rg_mode15_and16_sse(const Byte* pSrc, int srcPitch) {
+    LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
+
+    auto max18 = _mm_max_epu8(a1, a8);
+    auto min18 = _mm_min_epu8(a1, a8);
+
+    auto max27 = _mm_max_epu8(a2, a7);
+    auto min27 = _mm_min_epu8(a2, a7);
+
+    auto max36 = _mm_max_epu8(a3, a6);
+    auto min36 = _mm_min_epu8(a3, a6);
+
+    auto d1 = _mm_subs_epu8(max18, min18);
+    auto d2 = _mm_subs_epu8(max27, min27);
+    auto d3 = _mm_subs_epu8(max36, min36);
+
+    auto mindiff = _mm_min_epu8(d1, d2);
+    mindiff = _mm_min_epu8(mindiff, d3);
+
+    auto avg12 = _mm_avg_epu8(a1, a2);
+    auto avg23 = _mm_avg_epu8(a2, a3);
+    auto avg67 = _mm_avg_epu8(a6, a7);
+    auto avg78 = _mm_avg_epu8(a7, a8);
+
+    auto avg1223 = _mm_avg_epu8(avg12, avg23);
+
+    auto avg6778 = _mm_avg_epu8(avg67, avg78);
+    auto avg6778b = _mm_subs_epu8(avg6778, _mm_set1_epi8(1));
+    auto avg = _mm_avg_epu8(avg1223, avg6778b);
+    
+
+    auto result = select_on_equal(mindiff, d1, c, simd_clip(avg, min18, max18));
+    result = select_on_equal(mindiff, d3, result, simd_clip(avg, min36, max36));
+    return select_on_equal(mindiff, d2, result, simd_clip(avg, min27, max27));
+}
+
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode17_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);
