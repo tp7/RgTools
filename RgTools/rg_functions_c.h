@@ -1,5 +1,5 @@
-#ifndef __FUNCTIONS_C_H__
-#define __FUNCTIONS_C_H__
+#ifndef __RG_FUNCTIONS_C_H__
+#define __RG_FUNCTIONS_C_H__
 
 #include "common.h"
 #include <xutility>
@@ -26,9 +26,6 @@ static RG_FORCEINLINE Byte clip(T val, T minimum, T maximum) {
     return std::max(std::min(val, maximum), minimum);
 }
 
-RG_FORCEINLINE Byte rg_nothing_cpp(const Byte*, int) {
-    return 0;
-}
 
 RG_FORCEINLINE Byte rg_mode1_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -102,7 +99,6 @@ RG_FORCEINLINE Byte rg_mode5_cpp(const Byte* pSrc, int srcPitch) {
     if (mindiff == c3) return clip(c, mil3, mal3);
     return clip(c, mil1, mal1);
 }
-
 
 RG_FORCEINLINE Byte rg_mode6_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -179,7 +175,6 @@ RG_FORCEINLINE Byte rg_mode7_cpp(const Byte* pSrc, int srcPitch) {
     if (mindiff == c3) return clipped3;
     return clipped1;
 }
-
 
 RG_FORCEINLINE Byte rg_mode8_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -272,7 +267,6 @@ RG_FORCEINLINE Byte rg_mode10_cpp(const Byte* pSrc, int srcPitch) {
     return a4;
 }
 
-
 RG_FORCEINLINE Byte rg_mode11_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
@@ -291,7 +285,6 @@ RG_FORCEINLINE Byte rg_mode12_cpp(const Byte* pSrc, int srcPitch) {
 
     return val;
 }
-
 
 RG_FORCEINLINE Byte rg_mode13_and14_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -324,7 +317,6 @@ RG_FORCEINLINE Byte rg_mode15_and16_cpp(const Byte* pSrc, int srcPitch) {
     return clip(average, (int)std::min(a1, a8), (int)std::max(a1, a8));
 }
 
-
 RG_FORCEINLINE Byte rg_mode17_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
@@ -345,7 +337,6 @@ RG_FORCEINLINE Byte rg_mode17_cpp(const Byte* pSrc, int srcPitch) {
 
     return clip(c, std::min(lower, upper), std::max(lower, upper));
 }
-
 
 RG_FORCEINLINE Byte rg_mode18_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -376,7 +367,6 @@ RG_FORCEINLINE Byte rg_mode19_cpp(const Byte* pSrc, int srcPitch) {
     return val;
 }
 
-
 RG_FORCEINLINE Byte rg_mode20_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
@@ -405,7 +395,6 @@ RG_FORCEINLINE Byte rg_mode21_cpp(const Byte* pSrc, int srcPitch) {
 
     return clip((int)c, mi, ma);
 }
-
 
 RG_FORCEINLINE Byte rg_mode22_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
@@ -456,7 +445,6 @@ RG_FORCEINLINE Byte rg_mode23_cpp(const Byte* pSrc, int srcPitch) {
     return c - u + d; // this probably will never overflow.
 }
 
-
 RG_FORCEINLINE Byte rg_mode24_cpp(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
@@ -502,5 +490,6 @@ RG_FORCEINLINE Byte rg_mode24_cpp(const Byte* pSrc, int srcPitch) {
     return c - u + d;
 }
 
+#undef LOAD_SQUARE_CPP
 
 #endif

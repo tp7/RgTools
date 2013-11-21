@@ -1,5 +1,5 @@
-#include "functions_c.h"
-#include "functions_sse.h"
+#include "rg_functions_c.h"
+#include "rg_functions_sse.h"
 #include "removegrain.h"
 
 

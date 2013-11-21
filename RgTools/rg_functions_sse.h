@@ -1,5 +1,5 @@
-#ifndef __FUNCTIONS_SSE_H__
-#define __FUNCTIONS_SSE_H__
+#ifndef __RG_FUNCTIONS_SSE_H__
+#define __RG_FUNCTIONS_SSE_H__
 
 #include "common.h"
 
@@ -766,5 +766,6 @@ RG_FORCEINLINE __m128i rg_mode24_sse(const Byte* pSrc, int srcPitch) {
     return _mm_adds_epu8(_mm_subs_epu8(c, u), d);
 }
 
+#undef LOAD_SQUARE_SSE
 
 #endif

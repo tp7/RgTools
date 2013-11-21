@@ -27,21 +27,30 @@
     <ClInclude Include="clense.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="repair.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="repair_functions_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="removegrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="functions_sse.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="functions_c.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="clense.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="avs2x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rg_functions_c.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rg_functions_sse.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="repair.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
