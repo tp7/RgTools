@@ -55,13 +55,7 @@ RepairPlaneProcessor* c_functions[] = {
   process_plane_c<repair_mode15_cpp>,
   process_plane_c<repair_mode16_cpp>,
   process_plane_c<repair_mode17_cpp>,
-  process_plane_c<repair_mode18_cpp>,
-  process_plane_c<repair_mode19_cpp>, //todo
-  process_plane_c<repair_mode20_cpp>, //todo
-  process_plane_c<repair_mode21_cpp>, //todo
-  process_plane_c<repair_mode22_cpp>, //todo
-  process_plane_c<repair_mode23_cpp>, //todo
-  process_plane_c<repair_mode24_cpp> //todo
+  process_plane_c<repair_mode18_cpp>
 };
 
 auto sse3_functions = c_functions;
@@ -73,7 +67,7 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const cha
       env->ThrowError("Repair works only with planar colorspaces");
     }
 
-    if (mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
+    if (mode_ > 18 || modeU_ > 18 || modeV_ > 18) {
       env->ThrowError("Sorry, this mode does not exist");
     }
 

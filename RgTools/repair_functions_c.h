@@ -472,42 +472,6 @@ RG_FORCEINLINE Byte repair_mode18_cpp(const Byte* pSrc, Byte val, int srcPitch) 
     return clip(val, mi, ma);
 }
 
-RG_FORCEINLINE Byte repair_mode19_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
-RG_FORCEINLINE Byte repair_mode20_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
-RG_FORCEINLINE Byte repair_mode21_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
-RG_FORCEINLINE Byte repair_mode22_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
-RG_FORCEINLINE Byte repair_mode23_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
-RG_FORCEINLINE Byte repair_mode24_cpp(const Byte* pSrc, Byte val, int srcPitch) {
-    LOAD_SQUARE_CPP(pSrc, srcPitch);
-
-    return val;
-}
-
 #undef LOAD_SQUARE_CPP
 
 #endif
