@@ -42,12 +42,12 @@ RepairPlaneProcessor* c_functions[] = {
   process_plane_c<repair_mode2_cpp>,
   process_plane_c<repair_mode3_cpp>,
   process_plane_c<repair_mode4_cpp>,
-  process_plane_c<repair_mode5_cpp>, //todo
-  process_plane_c<repair_mode6_cpp>, //todo
-  process_plane_c<repair_mode7_cpp>, //todo
-  process_plane_c<repair_mode8_cpp>, //todo
-  process_plane_c<repair_mode9_cpp>, //todo
-  process_plane_c<repair_mode10_cpp>, //todo
+  process_plane_c<repair_mode5_cpp>, 
+  process_plane_c<repair_mode6_cpp>, 
+  process_plane_c<repair_mode7_cpp>, 
+  process_plane_c<repair_mode8_cpp>, 
+  process_plane_c<repair_mode9_cpp>, 
+  process_plane_c<repair_mode10_cpp>, 
   process_plane_c<repair_mode1_cpp>,
   process_plane_c<repair_mode12_cpp>,
   process_plane_c<repair_mode13_cpp>,

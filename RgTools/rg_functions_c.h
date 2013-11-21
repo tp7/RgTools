@@ -211,8 +211,7 @@ RG_FORCEINLINE Byte rg_mode8_cpp(const Byte* pSrc, int srcPitch) {
     if (mindiff == c4) return clipped4;
     if (mindiff == c2) return clipped2;
     if (mindiff == c3) return clipped3;
-    if (mindiff == c1) return clipped1;
-    return 0;
+    return clipped1;
 }
 
 RG_FORCEINLINE Byte rg_mode9_cpp(const Byte* pSrc, int srcPitch) {

@@ -73,37 +73,197 @@ RG_FORCEINLINE Byte repair_mode4_cpp(const Byte* pSrc, Byte val, int srcPitch) {
 RG_FORCEINLINE Byte repair_mode5_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto mal1 = std::max(std::max(a1, a8), c);
+    auto mil1 = std::min(std::min(a1, a8), c);
+
+    auto mal2 = std::max(std::max(a2, a7), c);
+    auto mil2 = std::min(std::min(a2, a7), c);
+
+    auto mal3 = std::max(std::max(a3, a6), c);
+    auto mil3 = std::min(std::min(a3, a6), c);
+
+    auto mal4 = std::max(std::max(a4, a5), c);
+    auto mil4 = std::min(std::min(a4, a5), c);
+
+    Byte c1 = std::abs(val-clip(val, mil1, mal1));
+    Byte c2 = std::abs(val-clip(val, mil2, mal2));
+    Byte c3 = std::abs(val-clip(val, mil3, mal3));
+    Byte c4 = std::abs(val-clip(val, mil4, mal4));
+
+    auto mindiff = std::min(std::min(std::min(c1, c2), c3), c4);
+
+    if (mindiff == c4) return clip(val, mil4, mal4);
+    if (mindiff == c2) return clip(val, mil2, mal2);
+    if (mindiff == c3) return clip(val, mil3, mal3);
+    return clip(val, mil1, mal1);
 }
 
 RG_FORCEINLINE Byte repair_mode6_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto mal1 = std::max(std::max(a1, a8), c);
+    auto mil1 = std::min(std::min(a1, a8), c);
+
+    auto mal2 = std::max(std::max(a2, a7), c);
+    auto mil2 = std::min(std::min(a2, a7), c);
+
+    auto mal3 = std::max(std::max(a3, a6), c);
+    auto mil3 = std::min(std::min(a3, a6), c);
+
+    auto mal4 = std::max(std::max(a4, a5), c);
+    auto mil4 = std::min(std::min(a4, a5), c);
+
+    int d1 = mal1 - mil1;
+    int d2 = mal2 - mil2;
+    int d3 = mal3 - mil3;
+    int d4 = mal4 - mil4;
+
+    Byte clipped1 = clip(val, mil1, mal1);
+    Byte clipped2 = clip(val, mil2, mal2);
+    Byte clipped3 = clip(val, mil3, mal3);
+    Byte clipped4 = clip(val, mil4, mal4);
+
+    int c1 = clip((std::abs(val-clipped1)<<1)+d1, 0, 255);
+    int c2 = clip((std::abs(val-clipped2)<<1)+d2, 0, 255);
+    int c3 = clip((std::abs(val-clipped3)<<1)+d3, 0, 255);
+    int c4 = clip((std::abs(val-clipped4)<<1)+d4, 0, 255);
+
+    int mindiff = std::min(std::min(std::min(c1, c2), c3), c4);
+
+    if (mindiff == c4) return clip(val, mil4, mal4);
+    if (mindiff == c2) return clip(val, mil2, mal2);
+    if (mindiff == c3) return clip(val, mil3, mal3);
+    return clip(val, mil1, mal1);
 }
 
 RG_FORCEINLINE Byte repair_mode7_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto mal1 = std::max(std::max(a1, a8), c);
+    auto mil1 = std::min(std::min(a1, a8), c);
+
+    auto mal2 = std::max(std::max(a2, a7), c);
+    auto mil2 = std::min(std::min(a2, a7), c);
+
+    auto mal3 = std::max(std::max(a3, a6), c);
+    auto mil3 = std::min(std::min(a3, a6), c);
+
+    auto mal4 = std::max(std::max(a4, a5), c);
+    auto mil4 = std::min(std::min(a4, a5), c);
+
+    auto d1 = mal1 - mil1;
+    auto d2 = mal2 - mil2;
+    auto d3 = mal3 - mil3;
+    auto d4 = mal4 - mil4;
+
+    auto clipped1 = clip(val, mil1, mal1);
+    auto clipped2 = clip(val, mil2, mal2);
+    auto clipped3 = clip(val, mil3, mal3);
+    auto clipped4 = clip(val, mil4, mal4);
+
+    int c1 = std::abs(val-clipped1)+d1;
+    int c2 = std::abs(val-clipped2)+d2;
+    int c3 = std::abs(val-clipped3)+d3;
+    int c4 = std::abs(val-clipped4)+d4;
+
+    auto mindiff = std::min(std::min(std::min(c1, c2), c3), c4);
+
+    if (mindiff == c4) return clipped4;
+    if (mindiff == c2) return clipped2;
+    if (mindiff == c3) return clipped3;
+    return clipped1;
 }
 
 RG_FORCEINLINE Byte repair_mode8_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto mal1 = std::max(std::max(a1, a8), c);
+    auto mil1 = std::min(std::min(a1, a8), c);
+
+    auto mal2 = std::max(std::max(a2, a7), c);
+    auto mil2 = std::min(std::min(a2, a7), c);
+
+    auto mal3 = std::max(std::max(a3, a6), c);
+    auto mil3 = std::min(std::min(a3, a6), c);
+
+    auto mal4 = std::max(std::max(a4, a5), c);
+    auto mil4 = std::min(std::min(a4, a5), c);
+
+    Byte d1 = mal1 - mil1;
+    Byte d2 = mal2 - mil2;
+    Byte d3 = mal3 - mil3;
+    Byte d4 = mal4 - mil4;
+
+    Byte clipped1 = clip(val, mil1, mal1);
+    Byte clipped2 = clip(val, mil2, mal2);
+    Byte clipped3 = clip(val, mil3, mal3);
+    Byte clipped4 = clip(val, mil4, mal4);
+
+    int c1 = clip(std::abs(val-clipped1)+(d1<<1), 0, 255);
+    int c2 = clip(std::abs(val-clipped2)+(d2<<1), 0, 255);
+    int c3 = clip(std::abs(val-clipped3)+(d3<<1), 0, 255);
+    int c4 = clip(std::abs(val-clipped4)+(d4<<1), 0, 255);
+
+    Byte mindiff = std::min(std::min(std::min(c1, c2), c3), c4);
+
+    if (mindiff == c4) return clipped4;
+    if (mindiff == c2) return clipped2;
+    if (mindiff == c3) return clipped3;
+    return clipped1;
 }
 
 RG_FORCEINLINE Byte repair_mode9_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto mal1 = std::max(std::max(a1, a8), c);
+    auto mil1 = std::min(std::min(a1, a8), c);
+
+    auto mal2 = std::max(std::max(a2, a7), c);
+    auto mil2 = std::min(std::min(a2, a7), c);
+
+    auto mal3 = std::max(std::max(a3, a6), c);
+    auto mil3 = std::min(std::min(a3, a6), c);
+
+    auto mal4 = std::max(std::max(a4, a5), c);
+    auto mil4 = std::min(std::min(a4, a5), c);
+
+    auto d1 = mal1 - mil1;
+    auto d2 = mal2 - mil2;
+    auto d3 = mal3 - mil3;
+    auto d4 = mal4 - mil4;
+
+    auto mindiff = std::min(std::min(std::min(d1, d2), d3), d4);
+
+    if (mindiff == d4) return clip(val, mil4, mal4);
+    if (mindiff == d2) return clip(val, mil2, mal2);
+    if (mindiff == d3) return clip(val, mil3, mal3);
+    return clip(val, mil1, mal1);
 }
 
 RG_FORCEINLINE Byte repair_mode10_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
-    return val;
+    auto d1 = std::abs(val - a1);
+    auto d2 = std::abs(val - a2);
+    auto d3 = std::abs(val - a3);
+    auto d4 = std::abs(val - a4);
+    auto d5 = std::abs(val - a5);
+    auto d6 = std::abs(val - a6);
+    auto d7 = std::abs(val - a7);
+    auto d8 = std::abs(val - a8);
+    auto dc = std::abs(val - c);
+
+    auto mindiff = std::min(std::min(std::min(std::min(std::min(std::min(std::min(std::min(d1, d2), d3), d4), d5), d6), d7), d8), dc);
+
+    if (mindiff == d7) return a7;
+    if (mindiff == d8) return a8;
+    if (mindiff == d6) return a6;
+    if (mindiff == d2) return a2;
+    if (mindiff == d3) return a3;
+    if (mindiff == d1) return a1;
+    if (mindiff == d5) return a5;
+    if (mindiff == dc) return c;
+    return a4;
 }
 
 RG_FORCEINLINE Byte repair_mode12_cpp(const Byte* pSrc, Byte val, int srcPitch) {
