@@ -75,7 +75,7 @@ static void process_plane_sse2(Byte* pDst, const Byte *pSrc, const Byte* pRef1, 
 PVideoFrame Clense::GetFrame(int n, IScriptEnvironment* env) {
     auto srcFrame = child->GetFrame(n, env);
 
-    if (n == 0 || n == vi.num_frames || (mode_ == ClenseMode::BACKWARD && n == 1) || (mode_ == ClenseMode::FORWARD && n == vi.num_frames - 1)) {
+    if (n == 0 || n == vi.num_frames-1 || (mode_ == ClenseMode::BACKWARD && n == 1) || (mode_ == ClenseMode::FORWARD && n == vi.num_frames - 2)) {
         return srcFrame;
     }
 
