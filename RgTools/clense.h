@@ -11,6 +11,9 @@ enum class ClenseMode {
 };
 
 class Clense : public GenericVideoFilter {
+
+
+
 public:
     Clense(PClip child, PClip previous, PClip next, bool grey, ClenseMode mode, IScriptEnvironment* env);
 
@@ -22,6 +25,10 @@ private:
     bool grey_;
     bool sse2_;
     ClenseMode mode_;
+
+    typedef void (ClenseProcessor)(Byte* pDst, const Byte *pSrc, const Byte* pRef1, const Byte* pRef2, int dstPitch, int srcPitch, int ref1Pitch, int ref2Pitch, int width, int height, IScriptEnvironment *env);
+
+    ClenseProcessor* processor_;
 };
 
 
