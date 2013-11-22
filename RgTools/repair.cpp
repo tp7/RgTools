@@ -166,10 +166,6 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const cha
         env->ThrowError("Repair works only with planar colorspaces");
     }
 
-    if (!vi.IsSameColorspace(refVi)) {
-        env->ThrowError("Both clips should have the same colorspace!");
-    }
-
     if (vi.width != refVi.width || vi.height != refVi.height) {
         env->ThrowError("Clips should be of the same size!");
     }
@@ -184,6 +180,12 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const cha
     }
     if (modeV_ <= UNDEFINED_MODE) {
         modeV_ = modeU_;
+    }
+
+    if (!vi.IsY8() && (modeU_ != -1 || modeV_ != -1)) {
+        if (!vi.IsSameColorspace(refVi)) {
+            env->ThrowError("Both clips should have the same colorspace!");
+        }
     }
 
     functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
