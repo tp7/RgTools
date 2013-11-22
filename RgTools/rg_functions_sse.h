@@ -67,11 +67,6 @@ static RG_FORCEINLINE __m128i not_rounded_average(__m128i a, __m128i b) {
 }
 
 
-RG_FORCEINLINE __m128i rg_nothing_sse(const Byte*, int) {
-    return _mm_set1_epi32(0xBAD);
-}
-
-
 template<InstructionSet optLevel>
 RG_FORCEINLINE __m128i rg_mode1_sse(const Byte* pSrc, int srcPitch) {
     LOAD_SQUARE_SSE(optLevel, pSrc, srcPitch);

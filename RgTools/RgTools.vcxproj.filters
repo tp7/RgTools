@@ -33,6 +33,9 @@
     <ClInclude Include="repair_functions_c.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="repair_functions_sse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="removegrain.cpp">

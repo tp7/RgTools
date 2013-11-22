@@ -23,7 +23,7 @@ static RG_FORCEINLINE bool is_16byte_aligned(const void *ptr) {
     return (((unsigned long)ptr) & 15) == 0;
 }
 
-static RG_FORCEINLINE __m128i simd_clip(__m128i &val, __m128i &minimum, __m128i &maximum) {
+static RG_FORCEINLINE __m128i simd_clip(const __m128i &val, const __m128i &minimum, const __m128i &maximum) {
     return _mm_max_epu8(_mm_min_epu8(val, maximum), minimum);
 }
 

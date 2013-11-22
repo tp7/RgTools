@@ -1,6 +1,31 @@
 #include "repair_functions_c.h"
+#include "repair_functions_sse.h"
 #include "repair.h"
 
+
+template<SseModeProcessor processor, InstructionSet optLevel>
+static void process_plane_sse(IScriptEnvironment* env, BYTE* pDst, const BYTE* pSrc, const BYTE* pRef, int dstPitch, int srcPitch, int refPitch, int width, int height) {
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
+
+    pSrc += srcPitch;
+    pDst += dstPitch;
+    pRef += refPitch;
+    for (int y = 1; y < height-1; ++y) {
+        pDst[0] = pSrc[0];
+        for (int x = 1; x < width-1; x+=16) {
+            __m128i val = simd_loadu_si128<optLevel>(pSrc+x);
+            __m128i result = processor(pRef+x, val, srcPitch);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
+        }
+        pDst[width-1] = pSrc[width-1];
+
+        pSrc += srcPitch;
+        pDst += dstPitch;
+        pRef += refPitch;
+    }
+
+    env->BitBlt(pDst, dstPitch, pSrc, srcPitch, width, 1);
+}
 
 template<CModeProcessor processor>
 static void process_plane_c(IScriptEnvironment* env, BYTE* pDst, const BYTE* pSrc, const BYTE* pRef, int dstPitch, int srcPitch, int refPitch, int width, int height) {
@@ -35,6 +60,64 @@ static void copyPlane(IScriptEnvironment* env, BYTE* pDst, const BYTE* pSrc, con
 }
 
 
+RepairPlaneProcessor* sse3_functions[] = {
+    doNothing,
+    copyPlane,
+    process_plane_sse<repair_mode1_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode2_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode3_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode4_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode5_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode6_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode7_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode8_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode9_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode10_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode1_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode12_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode13_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode14_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode15_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode16_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode17_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode18_sse<SSE3>, SSE3>,
+    process_plane_sse<repair_mode19_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode20_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode21_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode22_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode23_sse<SSE3>, SSE3>, 
+    process_plane_sse<repair_mode24_sse<SSE3>, SSE3> 
+};
+
+RepairPlaneProcessor* sse2_functions[] = {
+    doNothing,
+    copyPlane,
+    process_plane_sse<repair_mode1_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode2_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode3_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode4_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode5_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode6_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode7_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode8_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode9_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode10_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode1_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode12_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode13_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode14_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode15_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode16_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode17_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode18_sse<SSE2>, SSE2>,
+    process_plane_sse<repair_mode19_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode20_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode21_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode22_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode23_sse<SSE2>, SSE2>, 
+    process_plane_sse<repair_mode24_sse<SSE2>, SSE2> 
+};
+
 RepairPlaneProcessor* c_functions[] = {
   doNothing,
   copyPlane,
@@ -63,9 +146,6 @@ RepairPlaneProcessor* c_functions[] = {
   process_plane_c<repair_mode23_cpp>, 
   process_plane_c<repair_mode24_cpp> 
 };
-
-auto sse3_functions = c_functions;
-auto sse2_functions = c_functions;
 
 Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
   : GenericVideoFilter(child), ref_(ref), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {

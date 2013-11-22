@@ -317,10 +317,15 @@ RG_FORCEINLINE Byte repair_mode15_cpp(const Byte* pSrc, Byte val, int srcPitch) 
     auto mal4 = std::max(a4, a5);
     auto mil4 = std::min(a4, a5);
 
-    Byte c1 = std::abs (c - clip(c, mil1, mal1));
-    Byte c2 = std::abs (c - clip(c, mil2, mal2));
-    Byte c3 = std::abs (c - clip(c, mil3, mal3));
-    Byte c4 = std::abs (c - clip(c, mil4, mal4));
+    auto clipped1 = clip(c, mil1, mal1);
+    auto clipped2 = clip(c, mil2, mal2);
+    auto clipped3 = clip(c, mil3, mal3);
+    auto clipped4 = clip(c, mil4, mal4);
+
+    Byte c1 = std::abs (c - clipped1);
+    Byte c2 = std::abs (c - clipped2);
+    Byte c3 = std::abs (c - clipped3);
+    Byte c4 = std::abs (c - clipped4);
 
     Byte mindiff = std::min (std::min (c1, c2), std::min (c3, c4));
 

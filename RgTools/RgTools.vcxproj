@@ -88,6 +88,7 @@
     <ClInclude Include="removegrain.h" />
     <ClInclude Include="repair.h" />
     <ClInclude Include="repair_functions_c.h" />
+    <ClInclude Include="repair_functions_sse.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
