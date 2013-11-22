@@ -235,37 +235,37 @@ PlaneProcessor* c_functions[] = {
 
 RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
     : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
-        if(!vi.IsPlanar()) {
-            env->ThrowError("RemoveGrain2 works only with planar colorspaces");
-        }
+    if(!vi.IsPlanar()) {
+        env->ThrowError("RemoveGrain2 works only with planar colorspaces");
+    }
 
-        if (mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
-            env->ThrowError("Sorry, this mode does not exist");
-        }
+    if (mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
+        env->ThrowError("Sorry, this mode does not exist");
+    }
 
-        //now change undefined mode value and EVERYTHING WILL BREAK
-        if (modeU_ <= UNDEFINED_MODE) { 
-            modeU_ = mode_;
-        }
-        if (modeV_ <= UNDEFINED_MODE) {
-            modeV_ = modeU_;
-        }
+    //now change undefined mode value and EVERYTHING WILL BREAK
+    if (modeU_ <= UNDEFINED_MODE) { 
+        modeU_ = mode_;
+    }
+    if (modeV_ <= UNDEFINED_MODE) {
+        modeV_ = modeU_;
+    }
 
-        functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
-            : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
-            : c_functions;
+    functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
+        : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
+        : c_functions;
 
-        if (optimization != nullptr) {
-            if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
-                functions = sse2_functions;
-            } else if (lstrcmpi(optimization, "cpp") == 0) {
-                functions = c_functions;
-            }
-        }
-
-        if (vi.width < 17) { //not enough for XMM
+    if (optimization != nullptr) {
+        if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
+            functions = sse2_functions;
+        } else if (lstrcmpi(optimization, "cpp") == 0) {
             functions = c_functions;
         }
+    }
+
+    if (vi.width < 17) { //not enough for XMM
+        functions = c_functions;
+    }
 }
 
 

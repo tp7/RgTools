@@ -159,36 +159,47 @@ RepairPlaneProcessor* c_functions[] = {
 
 Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
   : GenericVideoFilter(child), ref_(ref), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
+
+    auto refVi = ref_->GetVideoInfo();
+
     if(!vi.IsPlanar()) {
-      env->ThrowError("Repair works only with planar colorspaces");
+        env->ThrowError("Repair works only with planar colorspaces");
+    }
+
+    if (!vi.IsSameColorspace(refVi)) {
+        env->ThrowError("Both clips should have the same colorspace!");
+    }
+
+    if (vi.width != refVi.width || vi.height != refVi.height) {
+        env->ThrowError("Clips should be of the same size!");
     }
 
     if (mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
-      env->ThrowError("Sorry, this mode does not exist");
+        env->ThrowError("Sorry, this mode does not exist");
     }
 
     //now change undefined mode value and EVERYTHING WILL BREAK
     if (modeU_ <= UNDEFINED_MODE) { 
-      modeU_ = mode_;
+        modeU_ = mode_;
     }
     if (modeV_ <= UNDEFINED_MODE) {
-      modeV_ = modeU_;
+        modeV_ = modeU_;
     }
 
     functions = (env->GetCPUFlags() & CPUF_SSE3) ? sse3_functions 
-      : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
-      : c_functions;
+        : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
+        : c_functions;
 
     if (optimization != nullptr) {
-      if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
-        functions = sse2_functions;
-      } else if (lstrcmpi(optimization, "cpp") == 0) {
-        functions = c_functions;
-      }
+        if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
+            functions = sse2_functions;
+        } else if (lstrcmpi(optimization, "cpp") == 0) {
+            functions = c_functions;
+        }
     }
 
     if (vi.width < 17) { //not enough for XMM
-      functions = c_functions;
+        functions = c_functions;
     }
 }
 
