@@ -8,23 +8,6 @@
 
 typedef Byte (CModeProcessor)(const Byte*, Byte val, int);
 
-#define LOAD_SQUARE_CPP(ptr, pitch) \
-    Byte a1 = *((ptr) - (pitch) - 1); \
-    Byte a2 = *((ptr) - (pitch)); \
-    Byte a3 = *((ptr) - (pitch) + 1); \
-    Byte a4 = *((ptr) - 1); \
-    Byte c  = *((ptr) ); \
-    Byte a5 = *((ptr) + 1); \
-    Byte a6 = *((ptr) + (pitch) - 1); \
-    Byte a7 = *((ptr) + (pitch)); \
-    Byte a8 = *((ptr) + (pitch) + 1);
-
-
-template<typename T>
-static RG_FORCEINLINE Byte clip(T val, T minimum, T maximum) {
-    return std::max(std::min(val, maximum), minimum);
-}
-
 RG_FORCEINLINE Byte repair_mode1_cpp(const Byte* pSrc, Byte val, int srcPitch) {
     LOAD_SQUARE_CPP(pSrc, srcPitch);
 
