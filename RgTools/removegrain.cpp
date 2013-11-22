@@ -9,12 +9,21 @@ static void process_plane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* p
 
     pSrc += srcPitch;
     pDst += dstPitch;
+    int mod16_width = width / 16 * 16;
+
     for (int y = 1; y < height-1; ++y) {
         pDst[0] = pSrc[0];
-        for (int x = 1; x < width-1; x+=16) {
+
+        for (int x = 1; x < mod16_width-1; x+=16) {
             __m128i result = processor(pSrc+x, srcPitch);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
         }
+
+        if (mod16_width != width) {
+            __m128i result = processor(pSrc+width-17, srcPitch);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+width-17), result);
+        }
+
         pDst[width-1] = pSrc[width-1];
 
         pSrc += srcPitch;
@@ -29,12 +38,20 @@ template<SseModeProcessor processor>
 static void process_halfplane_sse(IScriptEnvironment* env, const BYTE* pSrc, BYTE* pDst, int width, int height, int srcPitch, int dstPitch) {
     pSrc += srcPitch;
     pDst += dstPitch;
+    int mod16_width = width / 16 * 16;
+
     for (int y = 1; y < height/2; ++y) {
         pDst[0] = (pSrc[srcPitch] + pSrc[-srcPitch] + 1) / 2;
-        for (int x = 1; x < width-1; x+=16) {
+        for (int x = 1; x < mod16_width-1; x+=16) {
             __m128i result = processor(pSrc+x, srcPitch);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
         }
+
+        if (mod16_width != width) {
+            __m128i result = processor(pSrc+width-17, srcPitch);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+width-17), result);
+        }
+
         pDst[width-1] = (pSrc[width-1 + srcPitch] + pSrc[width-1 - srcPitch] + 1) / 2;
         pSrc += srcPitch;
         pDst += dstPitch;
@@ -257,14 +274,14 @@ PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
     auto dstFrame = env->NewVideoFrame(vi);
     
     functions[mode_+1](env, srcFrame->GetReadPtr(PLANAR_Y), dstFrame->GetWritePtr(PLANAR_Y), srcFrame->GetRowSize(PLANAR_Y), 
-        srcFrame->GetHeight(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y));
+        srcFrame->GetHeight(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y), dstFrame->GetPitch(PLANAR_Y));
 
     if (!vi.IsY8()) {
-        functions[modeU_+1](env, srcFrame->GetReadPtr(PLANAR_U), dstFrame->GetWritePtr(PLANAR_U), srcFrame->GetRowSize(PLANAR_U), 
-            srcFrame->GetHeight(PLANAR_U), srcFrame->GetPitch(PLANAR_U), srcFrame->GetPitch(PLANAR_U));
+        functions[modeU_+1](env,srcFrame->GetReadPtr(PLANAR_U), dstFrame->GetWritePtr(PLANAR_U), srcFrame->GetRowSize(PLANAR_U), 
+            srcFrame->GetHeight(PLANAR_U), srcFrame->GetPitch(PLANAR_U), dstFrame->GetPitch(PLANAR_U));
 
         functions[modeV_+1](env, srcFrame->GetReadPtr(PLANAR_V), dstFrame->GetWritePtr(PLANAR_V), srcFrame->GetRowSize(PLANAR_V), 
-            srcFrame->GetHeight(PLANAR_V), srcFrame->GetPitch(PLANAR_V), srcFrame->GetPitch(PLANAR_V));
+            srcFrame->GetHeight(PLANAR_V), srcFrame->GetPitch(PLANAR_V), dstFrame->GetPitch(PLANAR_V));
     }
     return dstFrame;
 }

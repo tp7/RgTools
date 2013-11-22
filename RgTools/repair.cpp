@@ -10,13 +10,23 @@ static void process_plane_sse(IScriptEnvironment* env, BYTE* pDst, const BYTE* p
     pSrc += srcPitch;
     pDst += dstPitch;
     pRef += refPitch;
+    int mod16_width = width / 16 * 16;
+
     for (int y = 1; y < height-1; ++y) {
         pDst[0] = pSrc[0];
-        for (int x = 1; x < width-1; x+=16) {
+        for (int x = 1; x < mod16_width-1; x+=16) {
             __m128i val = simd_loadu_si128<optLevel>(pSrc+x);
-            __m128i result = processor(pRef+x, val, srcPitch);
+            __m128i result = processor(pRef+x, val, refPitch);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+x), result);
         }
+
+        if (mod16_width != width) {
+            __m128i val = simd_loadu_si128<optLevel>(pSrc+width-17);
+            __m128i result = processor(pRef+width-17, val, refPitch);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(pDst+width-17), result);
+        }
+
+
         pDst[width-1] = pSrc[width-1];
 
         pSrc += srcPitch;
