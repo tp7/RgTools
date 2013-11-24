@@ -36,6 +36,9 @@
     <ClInclude Include="repair_functions_sse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vertical_cleaner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="removegrain.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="repair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertical_cleaner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
