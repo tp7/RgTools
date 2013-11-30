@@ -157,7 +157,7 @@ RepairPlaneProcessor* c_functions[] = {
   process_plane_c<repair_mode24_cpp> 
 };
 
-Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const char* optimization, IScriptEnvironment* env)
+Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, IScriptEnvironment* env)
   : GenericVideoFilter(child), ref_(ref), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
 
     auto refVi = ref_->GetVideoInfo();
@@ -192,14 +192,6 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, const cha
         : (env->GetCPUFlags() & CPUF_SSE2) ? sse2_functions
         : c_functions;
 
-    if (optimization != nullptr) {
-        if ((lstrcmpi(optimization, "sse2") == 0) && env->GetCPUFlags() & CPUF_SSE2) {
-            functions = sse2_functions;
-        } else if (lstrcmpi(optimization, "cpp") == 0) {
-            functions = c_functions;
-        }
-    }
-
     if (vi.width < 17) { //not enough for XMM
         functions = c_functions;
     }
@@ -229,6 +221,6 @@ PVideoFrame Repair::GetFrame(int n, IScriptEnvironment* env) {
 
 
 AVSValue __cdecl Create_Repair(AVSValue args, void*, IScriptEnvironment* env) {
-  enum { CLIP, REF, MODE, MODEU, MODEV, OPTIMIZATION };
-  return new Repair(args[CLIP].AsClip(), args[REF].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(Repair::UNDEFINED_MODE), args[MODEV].AsInt(Repair::UNDEFINED_MODE), args[OPTIMIZATION].AsString(nullptr), env);
+  enum { CLIP, REF, MODE, MODEU, MODEV };
+  return new Repair(args[CLIP].AsClip(), args[REF].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(Repair::UNDEFINED_MODE), args[MODEV].AsInt(Repair::UNDEFINED_MODE), env);
 }
