@@ -157,12 +157,12 @@ RepairPlaneProcessor* c_functions[] = {
   process_plane_c<repair_mode24_cpp> 
 };
 
-Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, IScriptEnvironment* env)
+Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, bool skip_cs_check, IScriptEnvironment* env)
   : GenericVideoFilter(child), ref_(ref), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
 
     auto refVi = ref_->GetVideoInfo();
 
-    if(!vi.IsPlanar()) {
+    if (!(vi.IsPlanar() || skip_cs_check)) {
         env->ThrowError("Repair works only with planar colorspaces");
     }
 
@@ -182,7 +182,7 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, IScriptEn
         modeV_ = modeU_;
     }
 
-    if (!vi.IsY8() && (modeU_ != -1 || modeV_ != -1)) {
+    if (vi.IsPlanar() && !vi.IsY8() && (modeU_ != -1 || modeV_ != -1)) {
         if (!vi.IsSameColorspace(refVi)) {
             env->ThrowError("Both clips should have the same colorspace!");
         }
@@ -207,7 +207,7 @@ PVideoFrame Repair::GetFrame(int n, IScriptEnvironment* env) {
       dstFrame->GetPitch(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y), refFrame->GetPitch(PLANAR_Y),
       srcFrame->GetRowSize(PLANAR_Y), srcFrame->GetHeight(PLANAR_Y));
 
-  if (!vi.IsY8()) {
+  if (vi.IsPlanar() && !vi.IsY8()) {
       functions[modeU_+1](env, dstFrame->GetWritePtr(PLANAR_U), srcFrame->GetReadPtr(PLANAR_U), refFrame->GetReadPtr(PLANAR_U),
           dstFrame->GetPitch(PLANAR_U), srcFrame->GetPitch(PLANAR_U), refFrame->GetPitch(PLANAR_U),
           srcFrame->GetRowSize(PLANAR_U), srcFrame->GetHeight(PLANAR_U));
@@ -221,6 +221,6 @@ PVideoFrame Repair::GetFrame(int n, IScriptEnvironment* env) {
 
 
 AVSValue __cdecl Create_Repair(AVSValue args, void*, IScriptEnvironment* env) {
-  enum { CLIP, REF, MODE, MODEU, MODEV };
-  return new Repair(args[CLIP].AsClip(), args[REF].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(Repair::UNDEFINED_MODE), args[MODEV].AsInt(Repair::UNDEFINED_MODE), env);
+    enum { CLIP, REF, MODE, MODEU, MODEV, PLANAR };
+    return new Repair(args[CLIP].AsClip(), args[REF].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(Repair::UNDEFINED_MODE), args[MODEV].AsInt(Repair::UNDEFINED_MODE), args[PLANAR].AsBool(false), env);
 }

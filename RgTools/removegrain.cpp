@@ -233,9 +233,9 @@ PlaneProcessor* c_functions[] = {
     process_plane_c<rg_mode24_cpp>
 };
 
-RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, IScriptEnvironment* env)
+RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, bool skip_cs_check, IScriptEnvironment* env)
     : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV), functions(nullptr) {
-    if(!vi.IsPlanar()) {
+    if (!(vi.IsPlanar() || skip_cs_check)) {
         env->ThrowError("RemoveGrain2 works only with planar colorspaces");
     }
 
@@ -268,7 +268,7 @@ PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
     functions[mode_+1](env, srcFrame->GetReadPtr(PLANAR_Y), dstFrame->GetWritePtr(PLANAR_Y), srcFrame->GetRowSize(PLANAR_Y), 
         srcFrame->GetHeight(PLANAR_Y), srcFrame->GetPitch(PLANAR_Y), dstFrame->GetPitch(PLANAR_Y));
 
-    if (!vi.IsY8()) {
+    if (vi.IsPlanar() && !vi.IsY8()) {
         functions[modeU_+1](env,srcFrame->GetReadPtr(PLANAR_U), dstFrame->GetWritePtr(PLANAR_U), srcFrame->GetRowSize(PLANAR_U), 
             srcFrame->GetHeight(PLANAR_U), srcFrame->GetPitch(PLANAR_U), dstFrame->GetPitch(PLANAR_U));
 
@@ -280,6 +280,6 @@ PVideoFrame RemoveGrain::GetFrame(int n, IScriptEnvironment* env) {
 
 
 AVSValue __cdecl Create_RemoveGrain(AVSValue args, void*, IScriptEnvironment* env) {
-    enum { CLIP, MODE, MODEU, MODEV };
-    return new RemoveGrain(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain::UNDEFINED_MODE), env);
+    enum { CLIP, MODE, MODEU, MODEV, PLANAR };
+    return new RemoveGrain(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(RemoveGrain::UNDEFINED_MODE), args[MODEV].AsInt(RemoveGrain::UNDEFINED_MODE), args[PLANAR].AsBool(false), env);
 }
