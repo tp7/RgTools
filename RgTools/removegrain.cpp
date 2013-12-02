@@ -240,7 +240,10 @@ RemoveGrain::RemoveGrain(PClip child, int mode, int modeU, int modeV, bool skip_
     }
 
     if (mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
-        env->ThrowError("Sorry, this mode does not exist");
+        env->ThrowError("Sorry, this mode does not exist!");
+    }
+    if (mode <= UNDEFINED_MODE) {
+        env->ThrowError("RemoveGrain mode should be between -1 and 24!");
     }
 
     //now change undefined mode value and EVERYTHING WILL BREAK
