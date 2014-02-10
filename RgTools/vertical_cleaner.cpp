@@ -161,22 +161,22 @@ static void dispatch_median(int mode, Byte* pDst, const Byte *pSrc, int dstPitch
     }
 }
 
-VerticalCleaner::VerticalCleaner(PClip child, int mode, int modeU, int modeV, IScriptEnvironment* env)
-    : GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV) {
-        if(!vi.IsPlanar()) {
-            env->ThrowError("VerticalCleaner works only with planar colorspaces");
-        }
+VerticalCleaner::VerticalCleaner(PClip child, int mode, int modeU, int modeV, bool skip_cs_check, IScriptEnvironment* env)
+: GenericVideoFilter(child), mode_(mode), modeU_(modeU), modeV_(modeV) {
+    if (!(vi.IsPlanar() || skip_cs_check)) {
+        env->ThrowError("VerticalCleaner works only with planar colorspaces");
+    }
 
-        if (mode_ > 2 || modeU_ > 2 || modeV_ > 2) {
-            env->ThrowError("Sorry, this mode does not exist");
-        }
+    if (mode_ > 2 || modeU_ > 2 || modeV_ > 2) {
+        env->ThrowError("Sorry, this mode does not exist");
+    }
 
-        if (modeU_ <= UNDEFINED_MODE) { 
-            modeU_ = mode_;
-        }
-        if (modeV_ <= UNDEFINED_MODE) {
-            modeV_ = modeU_;
-        }
+    if (modeU_ <= UNDEFINED_MODE) {
+        modeU_ = mode_;
+    }
+    if (modeV_ <= UNDEFINED_MODE) {
+        modeV_ = modeU_;
+    }
 }
 
 PVideoFrame VerticalCleaner::GetFrame(int n, IScriptEnvironment* env) {
@@ -197,7 +197,13 @@ PVideoFrame VerticalCleaner::GetFrame(int n, IScriptEnvironment* env) {
 }
 
 AVSValue __cdecl Create_VerticalCleaner(AVSValue args, void*, IScriptEnvironment* env) {
-    enum { CLIP, MODE, MODEU, MODEV };
-    return new VerticalCleaner(args[CLIP].AsClip(), args[MODE].AsInt(1), args[MODEU].AsInt(VerticalCleaner::UNDEFINED_MODE), args[MODEV].AsInt(VerticalCleaner::UNDEFINED_MODE), env);
+    enum { CLIP, MODE, MODEU, MODEV, PLANAR };
+    return new VerticalCleaner(
+        args[CLIP].AsClip(), 
+        args[MODE].AsInt(1),
+        args[MODEU].AsInt(VerticalCleaner::UNDEFINED_MODE),
+        args[MODEV].AsInt(VerticalCleaner::UNDEFINED_MODE),
+        args[PLANAR].AsBool(false), 
+        env);
 }
 

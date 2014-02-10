@@ -7,7 +7,7 @@ typedef void (VCleanerProcessor)(Byte* pDst, const Byte *pSrc, int dstPitch, int
 
 class VerticalCleaner : public GenericVideoFilter {
 public:
-    VerticalCleaner(PClip child, int mode, int modeU, int modeV, IScriptEnvironment* env);
+    VerticalCleaner(PClip child, int mode, int modeU, int modeV, bool skip_cs_check, IScriptEnvironment* env);
 
     PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
 
