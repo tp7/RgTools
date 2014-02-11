@@ -15,6 +15,6 @@ extern "C" __declspec(dllexport) const char* __stdcall AvisynthPluginInit3(IScri
     env->AddFunction("Clense", "c[previous]c[next]c[grey]b", Create_Clense, 0);
     env->AddFunction("ForwardClense", "c[grey]b", Create_ForwardClense, 0);
     env->AddFunction("BackwardClense", "c[grey]b", Create_BackwardClense, 0);
-    env->AddFunction("VerticalCleaner", "c[mode]i[modeU]i[modeV]i", Create_VerticalCleaner, 0);
+    env->AddFunction("VerticalCleaner", "c[mode]i[modeU]i[modeV]i[planar]b", Create_VerticalCleaner, 0);
     return "Itai, onii-chan!";
 }
