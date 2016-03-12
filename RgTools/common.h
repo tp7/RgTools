@@ -1,6 +1,7 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#include <algorithm>
 #define NOMINMAX
 #include <Windows.h>
 #pragma warning(disable: 4512 4244 4100)

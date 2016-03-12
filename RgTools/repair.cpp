@@ -170,7 +170,7 @@ Repair::Repair(PClip child, PClip ref, int mode, int modeU, int modeV, bool skip
         env->ThrowError("Clips should be of the same size!");
     }
 
-    if (mode <= UNDEFINED_MODE mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
+    if (mode <= UNDEFINED_MODE || mode_ > 24 || modeU_ > 24 || modeV_ > 24) {
         env->ThrowError("Repair mode should be between -1 and 24!");
     }
 
